@@ -3,5 +3,5 @@
   "ssl": false,
   "portRewrite": false,
   "debug": true,
-  "webotsHome": "PATH_TO_YOUR_WEBOTS_INSTALLATION"
+  "webotsHome": "/usr/local/webots"
 }
