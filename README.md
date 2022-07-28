@@ -1,4 +1,4 @@
-# webots-server
+# Webots Server
 
 This repository contains the files to be deployed on a server machine to run Webots simulations online.
 
