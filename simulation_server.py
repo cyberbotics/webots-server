@@ -285,7 +285,7 @@ class Client:
                     envVarDocker["DISPLAY"] = display
                     envVarDocker["XAUTHORITY"] = xauth
 
-                config['dockerConfDir'] = config['webotsHome'] + '/resources/web/server/config/simulation/docker'
+                config['dockerConfDir'] = 'config/simulation/docker'
                 # create a Dockerfile if not provided in the project folder
                 defaultDockerfilePath = ''
                 if not os.path.isfile('Dockerfile'):
@@ -815,7 +815,7 @@ def main():
         if 'SSH_CONNECTION' not in os.environ:
             os.system('xhost +local:root')
     if 'webotsHome' not in config:
-        config['webotsHome'] = os.getenv('WEBOTS_HOME', '../../..').replace('\\', '/')
+        config['webotsHome'] = os.getenv('WEBOTS_HOME', '/usr/bin/webots').replace('\\', '/')
     if config['docker']:
         config['webots'] = '/usr/local/webots/webots'
         config['projectsDir'] = '/usr/local/webots-project'
