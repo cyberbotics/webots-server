@@ -2,5 +2,6 @@
   "server": "localhost",
   "ssl": false,
   "portRewrite": false,
-  "debug": true
+  "debug": true,
+  "webotsHome": "PATH_TO_YOUR_WEBOTS_INSTALLATION"
 }
