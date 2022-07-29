@@ -2,5 +2,6 @@
   "server": "localhost",
   "ssl": false,
   "portRewrite": false,
-  "debug": true
+  "debug": true,
+  "webotsHome": "/usr/local/webots"
 }
