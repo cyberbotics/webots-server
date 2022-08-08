@@ -298,7 +298,7 @@ class Client:
                         client.websocket.write_message(error)
                         return
 
-                # create a docker-compose.yml
+                # create a docker-compose.yml and get simulation type
                 dockerComposePath = ''
                 for yamlFileName in ['webots.yml', 'webots.yaml']:
                     if os.path.exists(yamlFileName):
@@ -313,6 +313,9 @@ class Client:
                                     envVarDocker["THEIA_VOLUME"] = volume
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
+                            elif line.strip().startswith("type:"):
+                                message = line.replace(" ", "")
+                                client.websocket.write_message(message)
                         break
 
                 if not os.path.exists(dockerComposePath):
