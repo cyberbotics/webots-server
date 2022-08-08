@@ -298,7 +298,7 @@ class Client:
                         client.websocket.write_message(error)
                         return
 
-                # create a docker-compose.yml and simulation type
+                # create a docker-compose.yml and get simulation type
                 dockerComposePath = ''
                 for yamlFileName in ['webots.yml', 'webots.yaml']:
                     if os.path.exists(yamlFileName):
