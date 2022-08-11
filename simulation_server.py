@@ -307,7 +307,7 @@ class Client:
                         for line in data:
                             if line.startswith("dockerCompose:"):
                                 info = line.split(':')
-                                if info[1].startswith("theia"):
+                                if info[1].strip().startswith("theia"):
                                     volume = info[2]
                                     dockerComposePath = config['dockerConfDir'] + "/docker-compose-theia.yml"
                                     envVarDocker["THEIA_VOLUME"] = volume
