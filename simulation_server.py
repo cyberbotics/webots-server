@@ -152,7 +152,7 @@ class Client:
         if not self.url.startswith('https://github.com/'):
             logging.error(f'Unsupported URL protocol: {self.url}')
             return False
-        if 'allowedRepositories' in config and not self.url.startswith(tuple(config['allowedRepositories'])):
+        if 'allowedRepositories' not in config or not self.url.startswith(tuple(config['allowedRepositories'])):
             if not config['docker']:
                 logging.error('Docker not enabled: cannot host foreign simulations.')
                 return False
