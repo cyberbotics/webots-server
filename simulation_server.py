@@ -324,7 +324,7 @@ class Client:
                 if os.path.exists(dockerComposePath):
                     os.system(f'ln -s {dockerComposePath} ./docker-compose.yml')
                 else:
-                    error = f"error: Missing docker-compose-default.yml in {dockerComposePath}"
+                    error = f"error: Missing docker-compose-default.yml in {config['dockerConfDir']}"
                     logging.error(error)
                     client.websocket.write_message(error)
                     return
