@@ -793,8 +793,8 @@ def main():
     # docker:              launch webots inside a docker (false by default)
     # allowedRepositories: list of allowed GitHub simulation repositories
     # blockedRepositories: list of blocked GitHub simulation repositories
-    # shareIdleTime:       maximum load for running non-allowed repositories
-    # notify:              webservices to be notified about the server status
+    # shareIdleTime:       maximum load for running non-allowed repositories (50% by default)
+    # notify:              webservices to be notified about the server status (https://webots.cloud by default)
     # projectsDir:         directory in which projects are located
     # webotsHome:          directory in which Webots is installed (WEBOTS_HOME)
     # maxConnections:      maximum number of simultaneous Webots instances
