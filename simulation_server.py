@@ -285,7 +285,7 @@ class Client:
                     envVarDocker["DISPLAY"] = display
                     envVarDocker["XAUTHORITY"] = xauth
 
-                config['dockerConfDir'] = 'config/simulation/docker'
+                config['dockerConfDir'] = os.path.abspath(os.path.dirname( __file__)) + '/config/simulation/docker'
                 # create a Dockerfile if not provided in the project folder
                 defaultDockerfilePath = ''
                 if not os.path.isfile('Dockerfile'):
@@ -324,7 +324,7 @@ class Client:
                 if os.path.exists(dockerComposePath):
                     os.system(f'ln -s {dockerComposePath} ./docker-compose.yml')
                 else:
-                    error = f"error: Miss docker-compose-default.yml in {config['dockerConfDir']}"
+                    error = f"error: Missing docker-compose-default.yml in {config['dockerConfDir']}"
                     logging.error(error)
                     client.websocket.write_message(error)
                     return
