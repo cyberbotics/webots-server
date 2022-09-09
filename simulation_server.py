@@ -293,7 +293,7 @@ class Client:
                     if os.path.exists(defaultDockerfilePath):
                         os.system(f'ln -s {defaultDockerfilePath} ./Dockerfile')
                     else:
-                        error = f"error: Missing Dockerfile.default in {defaultDockerfilePath}"
+                        error = f"error: Missing Dockerfile.default in {config['dockerConfDir']}"
                         logging.error(error)
                         client.websocket.write_message(error)
                         return
