@@ -3,5 +3,6 @@
   "ssl": false,
   "portRewrite": false,
   "debug": true,
-  "webotsHome": "/usr/local/webots"
+  "webotsHome": "/usr/local/webots",
+  "allowedRepositories": "https://github.com/cyberbotics"
 }
