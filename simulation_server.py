@@ -153,7 +153,6 @@ class Client:
             logging.error(f'Unsupported URL protocol: {self.url}')
             return False
         if 'allowedRepositories' not in config or not self.url.startswith(tuple(config['allowedRepositories'])):
-            error = ''
             if not config['docker']:
                 error = 'Docker not enabled: cannot host simulations from repositories outside of "allowedRepositories".'
             elif config['shareIdleTime'] == 0:
@@ -162,17 +161,19 @@ class Client:
                 error = f'Cannot share idle time when current load is above threshold: {current_load}.'
             elif 'blockedRepositories' in config and self.url.startswith(tuple(config['blockedRepositories'])):
                 error = f'Cannot run simulation from blocked repository: {self.url}'
-            
+            else:
+                error = False
+
             if error:
                 self.websocket.write_message(f'docker: error: {error}')
                 logging.error(error)
-                return false
+                return False
         return self.setup_project_from_github()
 
     def setup_project_from_github(self):
         parts = self.url[19:].split('/')
         length = len(parts)
-        error = ''
+
         if length < 6:
             error = 'Wrong Webots simulation URL'
         else:
@@ -189,6 +190,8 @@ class Client:
                 filename = parts[length - 1]
                 if filename[-4:] != '.wbt':
                     error = 'Missing world file in Webots simulation URL'
+                else:
+                    error = False
 
         if error:
             self.websocket.write_message(f'docker: error: {error}')
