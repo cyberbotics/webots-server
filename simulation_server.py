@@ -153,41 +153,48 @@ class Client:
             logging.error(f'Unsupported URL protocol: {self.url}')
             return False
         if 'allowedRepositories' not in config or not self.url.startswith(tuple(config['allowedRepositories'])):
+            error = ''
             if not config['docker']:
-                logging.error('Docker not enabled: cannot host foreign simulations.')
-                return False
-            if config['shareIdleTime'] == 0:
-                logging.error('This simulation server is not configured to share idle time.')
-                return False
-            if current_load > config['shareIdleTime']:
-                logging.error(f'Cannot share idle time when current load is above threshold: {current_load}.')
-                return False
-            if 'blockedRepositories' in config and self.url.startswith(tuple(config['bannedRepositories'])):
-                logging.error(f'Cannot run simulation from blocked repository: {self.url}')
-                return False
-
+                error = 'Docker not enabled: cannot host simulations from repositories outside of "allowedRepositories".'
+            elif config['shareIdleTime'] == 0:
+                error = 'This simulation server is not configured to share idle time.'
+            elif current_load > config['shareIdleTime']:
+                error = f'Cannot share idle time when current load is above threshold: {current_load}.'
+            elif 'blockedRepositories' in config and self.url.startswith(tuple(config['blockedRepositories'])):
+                error = f'Cannot run simulation from blocked repository: {self.url}'
+            
+            if error:
+                self.websocket.write_message(f'docker: error: {error}')
+                logging.error(error)
+                return false
         return self.setup_project_from_github()
 
     def setup_project_from_github(self):
         parts = self.url[19:].split('/')
         length = len(parts)
+        error = ''
         if length < 6:
-            logging.error('Wrong Webots simulation URL')
-            return False
-        username = parts[0]
-        repository = parts[1]
-        if parts[2] != 'blob':
-            logging.error('Missing blob in Webots simulation URL')
-        version = parts[3]  # tag or branch name
-        folder = '/'.join(parts[4:length - 2])
-        project = '' if length == 6 else '/' + parts[length - 3]
-        if parts[length - 2] != 'worlds':
-            logging.error('Missing worlds folder in Webots simulation URL')
-            return False
-        filename = parts[length - 1]
-        if filename[-4:] != '.wbt':
-            logging.error('Missing world file in Webots simulation URL')
-            return False
+            error = 'Wrong Webots simulation URL'
+        else:
+            username = parts[0]
+            repository = parts[1]
+            if parts[2] != 'blob':
+                logging.error('Missing blob in Webots simulation URL')
+            version = parts[3]  # tag or branch name
+            folder = '/'.join(parts[4:length - 2])
+            project = '' if length == 6 else '/' + parts[length - 3]
+            if parts[length - 2] != 'worlds':
+                error = 'Missing worlds folder in Webots simulation URL'
+            else:
+                filename = parts[length - 1]
+                if filename[-4:] != '.wbt':
+                    error = 'Missing world file in Webots simulation URL'
+
+        if error:
+            self.websocket.write_message(f'docker: error: {error}')
+            logging.error(error)
+            return false
+
         self.world = filename
         mkdir_p(self.project_instance_path)
         os.chdir(self.project_instance_path)
