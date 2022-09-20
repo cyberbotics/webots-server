@@ -154,40 +154,51 @@ class Client:
             return False
         if 'allowedRepositories' not in config or not self.url.startswith(tuple(config['allowedRepositories'])):
             if not config['docker']:
-                logging.error('Docker not enabled: cannot host foreign simulations.')
-                return False
-            if config['shareIdleTime'] == 0:
-                logging.error('This simulation server is not configured to share idle time.')
-                return False
-            if current_load > config['shareIdleTime']:
-                logging.error(f'Cannot share idle time when current load is above threshold: {current_load}.')
-                return False
-            if 'blockedRepositories' in config and self.url.startswith(tuple(config['bannedRepositories'])):
-                logging.error(f'Cannot run simulation from blocked repository: {self.url}')
-                return False
+                error = 'Docker not enabled: cannot host simulations from repositories outside of "allowedRepositories".'
+            elif config['shareIdleTime'] == 0:
+                error = 'This simulation server is not configured to share idle time.'
+            elif current_load > config['shareIdleTime']:
+                error = f'Cannot share idle time when current load is above threshold: {current_load}.'
+            elif 'blockedRepositories' in config and self.url.startswith(tuple(config['blockedRepositories'])):
+                error = f'Cannot run simulation from blocked repository: {self.url}'
+            else:
+                error = False
 
+            if error:
+                self.websocket.write_message(f'loading: Error: {error}')
+                logging.error(error)
+                return False
         return self.setup_project_from_github()
 
     def setup_project_from_github(self):
         parts = self.url[19:].split('/')
         length = len(parts)
+
         if length < 6:
-            logging.error('Wrong Webots simulation URL')
-            return False
-        username = parts[0]
-        repository = parts[1]
-        if parts[2] != 'blob':
-            logging.error('Missing blob in Webots simulation URL')
-        version = parts[3]  # tag or branch name
-        folder = '/'.join(parts[4:length - 2])
-        project = '' if length == 6 else '/' + parts[length - 3]
-        if parts[length - 2] != 'worlds':
-            logging.error('Missing worlds folder in Webots simulation URL')
-            return False
-        filename = parts[length - 1]
-        if filename[-4:] != '.wbt':
-            logging.error('Missing world file in Webots simulation URL')
-            return False
+            error = 'Wrong Webots simulation URL'
+        else:
+            username = parts[0]
+            repository = parts[1]
+            if parts[2] != 'blob':
+                error = 'Missing blob in Webots simulation URL'
+            else:
+                version = parts[3]  # tag or branch name
+                folder = '/'.join(parts[4:length - 2])
+                project = '' if length == 6 else '/' + parts[length - 3]
+                if parts[length - 2] != 'worlds':
+                    error = 'Missing worlds folder in Webots simulation URL'
+                else:
+                    filename = parts[length - 1]
+                    if filename[-4:] != '.wbt':
+                        error = 'Missing world file in Webots simulation URL'
+                    else:
+                        error = False
+
+        if error:
+            self.websocket.write_message(f'loading: Error: {error}')
+            logging.error(error)
+            return false
+
         self.world = filename
         mkdir_p(self.project_instance_path)
         os.chdir(self.project_instance_path)
@@ -249,8 +260,8 @@ class Client:
             port = client.streaming_server_port
             asyncio.set_event_loop(asyncio.new_event_loop())
             if not os.path.exists(world):
-                error = f"error: {self.world} does not exist."
-                logging.error(error)
+                error = f"Error: {self.world} does not exist."
+                logging.error(f'loading: {error}')
                 client.websocket.write_message(error)
                 return
 
@@ -293,9 +304,9 @@ class Client:
                     if os.path.exists(defaultDockerfilePath):
                         os.system(f'ln -s {defaultDockerfilePath} ./Dockerfile')
                     else:
-                        error = f"error: Missing Dockerfile.default in {config['dockerConfDir']}"
+                        error = f"Error: Missing Dockerfile.default in {config['dockerConfDir']}"
                         logging.error(error)
-                        client.websocket.write_message(error)
+                        client.websocket.write_message(f'loading: {error}')
                         return
 
                 # create a docker-compose.yml and get simulation type
@@ -324,9 +335,9 @@ class Client:
                 if os.path.exists(dockerComposePath):
                     os.system(f'ln -s {dockerComposePath} ./docker-compose.yml')
                 else:
-                    error = f"error: Missing docker-compose-default.yml in {config['dockerConfDir']}"
+                    error = f"Error: Missing docker-compose-default.yml in {config['dockerConfDir']}"
                     logging.error(error)
-                    client.websocket.write_message(error)
+                    client.websocket.write_message(f'loading: {error}')
                     return
                 logging.info(f'docker-compose.yml created from {dockerComposePath}')
 
@@ -347,9 +358,9 @@ class Client:
                                                          bufsize=1, universal_newlines=True)
                 client.websocket.write_message(f"shutdownTimeout: {config['timeout']}")
             except Exception:
-                error = f"error: Unable to start Webots: {webotsCommand}"
+                error = f"Error: Unable to start Webots: {webotsCommand}"
                 logging.error(error)
-                client.websocket.write_message(error)
+                client.websocket.write_message(f'loading: {error}')
                 return
             logging.info(f'[{id(client)}] Webots [{client.webots_process.pid}] started: "{webotsCommand}"')
             while True:
@@ -362,10 +373,10 @@ class Client:
                     if line:
                         logging.info(line)
                         if not (defaultDockerfilePath or "theia" in line):
-                            client.websocket.write_message(f'docker: {line}')
+                            client.websocket.write_message(f'loading: {line}')
                         if defaultDockerfilePath and "not found" in line:
                             client.websocket.write_message(
-                                f"error: Image version {version} not available on Cyberbotics' dockerHub. "
+                                f"loading: Error: Image version {version} not available on Cyberbotics' dockerHub. "
                                 f"Please, add the appropriate Dockerfile to your project.")
                             return
                     if '|' in line:  # docker-compose format
