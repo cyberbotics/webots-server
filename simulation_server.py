@@ -180,18 +180,19 @@ class Client:
             username = parts[0]
             repository = parts[1]
             if parts[2] != 'blob':
-                logging.error('Missing blob in Webots simulation URL')
-            version = parts[3]  # tag or branch name
-            folder = '/'.join(parts[4:length - 2])
-            project = '' if length == 6 else '/' + parts[length - 3]
-            if parts[length - 2] != 'worlds':
-                error = 'Missing worlds folder in Webots simulation URL'
+                error = 'Missing blob in Webots simulation URL'
             else:
-                filename = parts[length - 1]
-                if filename[-4:] != '.wbt':
-                    error = 'Missing world file in Webots simulation URL'
+                version = parts[3]  # tag or branch name
+                folder = '/'.join(parts[4:length - 2])
+                project = '' if length == 6 else '/' + parts[length - 3]
+                if parts[length - 2] != 'worlds':
+                    error = 'Missing worlds folder in Webots simulation URL'
                 else:
-                    error = False
+                    filename = parts[length - 1]
+                    if filename[-4:] != '.wbt':
+                        error = 'Missing world file in Webots simulation URL'
+                    else:
+                        error = False
 
         if error:
             self.websocket.write_message(f'loading: Error: {error}')
