@@ -372,7 +372,7 @@ class Client:
                 if config['docker']:
                     if line:
                         logging.info(line)
-                        if not (defaultDockerfilePath or "theia" in line):
+                        if not ("theia" in line):
                             client.websocket.write_message(f'loading: {line}')
                         if defaultDockerfilePath and "not found" in line:
                             client.websocket.write_message(
