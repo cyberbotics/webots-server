@@ -179,8 +179,8 @@ class Client:
         else:
             username = parts[0]
             repository = parts[1]
-            if parts[2] != 'blob':
-                error = 'Missing blob in Webots simulation URL'
+            if parts[2] != 'blob' and parts[2] != 'tree':
+                error = f'Missing blob in Webots simulation URL, founds {parts[2]}'
             else:
                 version = parts[3]  # tag or branch name
                 folder = '/'.join(parts[4:length - 2])
