@@ -64,7 +64,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             success = start_webots(conn) if(os.path.isdir(shared_folder)) else 0
             if success == 0:
                 conn.sendall(b'FAIL0')
-                print(f"The shared folder '{data_str}' doesn't exist.")
+                print(f"The shared folder '{shared_folder}' doesn't exist.", file=sys.stderr)
             elif success == -1:
                 conn.sendall(b"FAIL1")
                 print(f"No world could be found in the shared folder.")
