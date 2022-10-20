@@ -69,7 +69,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 conn.sendall(b"FAIL1")
                 print(f"No world could be found in the shared folder.")
             elif success == -2:
-                conn.sendall(b"FAIL2")
+                conn.sendall(b'FAIL2')
                 print(f"More than one world was found in the shared folder.")
             elif success == 1:
                 print(f"Webots was executed successfully.")
