@@ -29,7 +29,7 @@ def start_webots(connection):
         for i in range(len(lines)):
             lines[i] = lines[i].strip()
 
-    connection.sendall(b"ACK")
+    connection.sendall(b'ACK')
     subprocess.call(['/usr/bin/open', '-W', '-n', '-a', '/Applications/Webots.app', '--args', world_file, *lines])
 
     os.remove(world_file)
