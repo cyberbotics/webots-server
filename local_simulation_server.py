@@ -13,7 +13,6 @@ webots = None
 
 
 def start_webots(connection):
-    #shared_folder_str = shared_folder.decode("utf-8")
     filenames = next(walk(shared_folder), (None, None, []))[2]
     worlds = list(filter(lambda file: file.endswith('.wbt'), filenames))
 
