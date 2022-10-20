@@ -72,4 +72,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 conn.sendall(b'FAIL2')
                 print('More than one world was found in the shared folder.' file=sys.stderr)
             elif success == 1:
-                print(f"Webots was executed successfully.")
+                print('Webots was executed successfully.')
