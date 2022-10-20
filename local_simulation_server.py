@@ -22,7 +22,6 @@ def start_webots(connection):
         return -2
     world_file = os.path.join(shared_folder, worlds[0])
 
-    arguments = []
     lines = []
     if 'launch_args.txt' in filenames:
         launch_args_file = open(os.path.join(shared_folder, 'launch_args.txt'), 'r')
