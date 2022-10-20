@@ -11,6 +11,7 @@ PORT = int(sys.argv[1])  # Port to listen on
 shared_folder = None
 webots = None
 
+
 def start_webots(connection):
     #shared_folder_str = shared_folder.decode("utf-8")
     filenames = next(walk(shared_folder), (None, None, []))[2]
