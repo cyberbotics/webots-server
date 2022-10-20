@@ -38,6 +38,7 @@ def start_webots(connection):
 
     return 1
 
+
 def keyboardInterruptHandler(signal, frame):
     if(shared_folder):
         if(os.path.isdir(shared_folder)):
