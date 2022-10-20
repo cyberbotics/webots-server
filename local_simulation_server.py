@@ -5,7 +5,7 @@ import subprocess
 import sys
 from os import walk
 
-HOST = ""  # Any host can connect
+HOST = ''  # Any host can connect
 PORT = int(sys.argv[1])  # Port to listen on
 
 shared_folder = None
