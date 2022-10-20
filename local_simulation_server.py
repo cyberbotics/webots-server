@@ -48,6 +48,7 @@ def keyboardInterruptHandler(signal, frame):
                     os.remove(filepath)
     exit(0)
 
+
 signal.signal(signal.SIGINT, keyboardInterruptHandler)
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
