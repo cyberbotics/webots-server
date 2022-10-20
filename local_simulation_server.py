@@ -60,7 +60,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             data = conn.recv(1024)
             if not data:
                 break
-            shared_folder = data.decode("utf-8")
+            shared_folder = data.decode('utf-8')
             success = start_webots(conn) if(os.path.isdir(shared_folder)) else 0
             if success == 0:
                 conn.sendall(b"FAIL0")
