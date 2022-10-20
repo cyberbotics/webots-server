@@ -67,7 +67,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 print(f"The shared folder '{shared_folder}' doesn't exist.", file=sys.stderr)
             elif success == -1:
                 conn.sendall(b"FAIL1")
-                print(f"No world could be found in the shared folder.")
+                print('No world could be found in the shared folder.' file=sys.stderr)
             elif success == -2:
                 conn.sendall(b'FAIL2')
                 print(f"More than one world was found in the shared folder.")
