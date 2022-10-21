@@ -1,3 +1,21 @@
+#!/usr/bin/env python3
+
+# Copyright 1996-2022 Cyberbotics Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Local simulation server."""
+
 import os
 import signal
 import socket
@@ -16,9 +34,9 @@ def start_webots(connection):
     filenames = next(walk(shared_folder), (None, None, []))[2]
     worlds = list(filter(lambda file: file.endswith('.wbt'), filenames))
 
-    if(len(worlds) == 0):
+    if len(worlds) == 0:
         return -1
-    if(len(worlds) > 1):
+    if len(worlds) > 1:
         return -2
     world_file = os.path.join(shared_folder, worlds[0])
 
@@ -40,8 +58,8 @@ def start_webots(connection):
 
 
 def keyboardInterruptHandler(signal, frame):
-    if(shared_folder):
-        if(os.path.isdir(shared_folder)):
+    if shared_folder:
+        if os.path.isdir(shared_folder):
             for filename in os.listdir(shared_folder):
                 filepath = os.path.join(shared_folder, filename)
                 if os.path.isfile(filepath):
