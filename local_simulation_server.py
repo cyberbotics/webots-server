@@ -60,7 +60,16 @@ def start_webots(connection):
             lines[i] = lines[i].strip()
 
     connection.sendall(b'ACK')
-    subprocess.call(['/usr/bin/open', '-W', '-n', '-a', '/Applications/Webots.app', '--args', world_file, *lines])
+    p = subprocess.Popen(['/usr/bin/open', '-W', '-n', '-a', '/Applications/Webots.app', '--args', world_file, *lines])
+    try:
+        p.wait()
+    except KeyboardInterrupt:
+        try:
+            p.terminate()
+        except OSError:
+            pass
+        p.wait()
+    # subprocess.call(['/usr/bin/open', '-W', '-n', '-a', '/Applications/Webots.app', '--args', world_file, *lines])
 
     clean_shared_folder()
     return 1
