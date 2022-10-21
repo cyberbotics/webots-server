@@ -17,6 +17,7 @@
 """Local simulation server."""
 
 import os
+import shutil
 import signal
 import socket
 import subprocess
@@ -60,10 +61,12 @@ def start_webots(connection):
 def keyboardInterruptHandler(signal, frame):
     if shared_folder:
         if os.path.isdir(shared_folder):
-            for filename in os.listdir(shared_folder):
-                filepath = os.path.join(shared_folder, filename)
-                if os.path.isfile(filepath):
-                    os.remove(filepath)
+            for element in os.listdir(shared_folder):
+                element_path = os.path.join(shared_folder, element)
+                if os.path.isfile(element_path):
+                    os.remove(element_path)
+                if os.path.isdir(element_path):
+                    shutil.rmtree(element_path)
     exit(0)
 
 
