@@ -85,10 +85,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 message = f'FAIL: The shared folder \'{shared_folder}\' doesn\'t exist.'
                 conn.sendall(message.encode('utf-8'))
             elif success == -1:
-                message = "FAIL: No world could be found in the shared folder."
+                message = 'FAIL: No world could be found in the shared folder.'
                 conn.sendall(message.encode('utf-8'))
             elif success == -2:
-                message = "FAIL: More than one world was found in the shared folder."
+                message = 'FAIL: More than one world was found in the shared folder.'
                 conn.sendall(message.encode('utf-8'))
             if success == 1:
                 print('Webots was executed successfully.')
