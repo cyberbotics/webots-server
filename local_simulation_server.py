@@ -71,6 +71,7 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
+    print(f'Waiting for connection on port {PORT}...')
     conn, addr = s.accept()
     with conn:
         print(f'Connection from {addr}')
@@ -79,15 +80,17 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             if not data:
                 break
             shared_folder = data.decode('utf-8')
-            success = start_webots(conn) if(os.path.isdir(shared_folder)) else 0
+            success = start_webots(conn) if os.path.isdir(shared_folder) else 0
             if success == 0:
-                conn.sendall(b'FAIL0')
-                print(f"The shared folder '{shared_folder}' doesn't exist.", file=sys.stderr)
+                message = f'FAIL: The shared folder \'{shared_folder}\' doesn\'t exist.'
+                conn.sendall(message.encode('utf-8'))
             elif success == -1:
-                conn.sendall(b"FAIL1")
-                print('No world could be found in the shared folder.' file=sys.stderr)
+                message = "FAIL: No world could be found in the shared folder."
+                conn.sendall(message.encode('utf-8'))
             elif success == -2:
-                conn.sendall(b'FAIL2')
-                print('More than one world was found in the shared folder.' file=sys.stderr)
-            elif success == 1:
+                message = "FAIL: More than one world was found in the shared folder."
+                conn.sendall(message.encode('utf-8'))
+            if success == 1:
                 print('Webots was executed successfully.')
+            else:
+                print(message, file=sys.stderr)
