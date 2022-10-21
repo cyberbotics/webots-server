@@ -31,6 +31,17 @@ shared_folder = None
 webots = None
 
 
+def clean_shared_folder():
+    if shared_folder:
+        if os.path.isdir(shared_folder):
+            for element in os.listdir(shared_folder):
+                element_path = os.path.join(shared_folder, element)
+                if os.path.isfile(element_path):
+                    os.remove(element_path)
+                if os.path.isdir(element_path):
+                    shutil.rmtree(element_path)
+
+
 def start_webots(connection):
     filenames = next(walk(shared_folder), (None, None, []))[2]
     worlds = list(filter(lambda file: file.endswith('.wbt'), filenames))
@@ -51,22 +62,12 @@ def start_webots(connection):
     connection.sendall(b'ACK')
     subprocess.call(['/usr/bin/open', '-W', '-n', '-a', '/Applications/Webots.app', '--args', world_file, *lines])
 
-    os.remove(world_file)
-    if 'launch_args.txt' in filenames:
-        os.remove(os.path.join(shared_folder, 'launch_args.txt'))
-
+    clean_shared_folder()
     return 1
 
 
 def keyboardInterruptHandler(signal, frame):
-    if shared_folder:
-        if os.path.isdir(shared_folder):
-            for element in os.listdir(shared_folder):
-                element_path = os.path.join(shared_folder, element)
-                if os.path.isfile(element_path):
-                    os.remove(element_path)
-                if os.path.isdir(element_path):
-                    shutil.rmtree(element_path)
+    clean_shared_folder()
     exit(0)
 
 
