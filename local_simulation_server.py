@@ -28,7 +28,7 @@ HOST = ''  # Any host can connect
 PORT = int(sys.argv[1])  # Port to listen on
 
 shared_folder = None
-webots = None
+tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 def clean_shared_folder():
@@ -42,68 +42,69 @@ def clean_shared_folder():
                     shutil.rmtree(element_path)
 
 
-def start_webots(connection):
-    filenames = next(walk(shared_folder), (None, None, []))[2]
-    worlds = list(filter(lambda file: file.endswith('.wbt'), filenames))
-
-    if len(worlds) == 0:
-        return -1
-    if len(worlds) > 1:
-        return -2
-    world_file = os.path.join(shared_folder, worlds[0])
-
-    lines = []
-    if 'launch_args.txt' in filenames:
-        launch_args_file = open(os.path.join(shared_folder, 'launch_args.txt'), 'r')
-        lines = launch_args_file.readlines()
-        for i in range(len(lines)):
-            lines[i] = lines[i].strip()
-
-    connection.sendall(b'ACK')
-    p = subprocess.Popen(['/usr/bin/open', '-W', '-n', '-a', '/Applications/Webots.app', '--args', world_file, *lines])
-    try:
-        p.wait()
-    except KeyboardInterrupt:
-        try:
-            p.terminate()
-        except OSError:
-            pass
-        p.wait()
-    # subprocess.call(['/usr/bin/open', '-W', '-n', '-a', '/Applications/Webots.app', '--args', world_file, *lines])
-
-    clean_shared_folder()
-    return 1
-
-
 def keyboardInterruptHandler(signal, frame):
     clean_shared_folder()
+    tcp_socket.close()
     exit(0)
 
 
+def print_and_exit(message):
+    clean_shared_folder()
+    tcp_socket.close()
+    print(message, file=sys.stderr)
+    exit(1)
+
+
 signal.signal(signal.SIGINT, keyboardInterruptHandler)
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((HOST, PORT))
-    s.listen()
-    print(f'Waiting for connection on port {PORT}...')
-    conn, addr = s.accept()
-    with conn:
-        print(f'Connection from {addr}')
-        while True:
-            data = conn.recv(1024)
-            if not data:
-                break
-            shared_folder = data.decode('utf-8')
-            success = start_webots(conn) if os.path.isdir(shared_folder) else 0
-            if success == 0:
-                message = f'FAIL: The shared folder \'{shared_folder}\' doesn\'t exist.'
-                conn.sendall(message.encode('utf-8'))
-            elif success == -1:
-                message = 'FAIL: No world could be found in the shared folder.'
-                conn.sendall(message.encode('utf-8'))
-            elif success == -2:
-                message = 'FAIL: More than one world was found in the shared folder.'
-                conn.sendall(message.encode('utf-8'))
-            if success == 1:
-                print('Webots was executed successfully.')
-            else:
-                print(message, file=sys.stderr)
+
+tcp_socket.bind((HOST, PORT))
+tcp_socket.listen()
+print(f'Waiting for connection on port {PORT}...')
+connection, address = tcp_socket.accept()
+
+print(f'Connection from {address}')
+data = connection.recv(1024)
+shared_folder = data.decode('utf-8')
+if not os.path.isdir(shared_folder):
+    message = f'FAIL: The shared folder \'{shared_folder}\' doesn\'t exist.'
+    connection.sendall(message.encode('utf-8'))
+    print_and_exit(message)
+
+filenames = next(walk(shared_folder), (None, None, []))[2]
+worlds = list(filter(lambda file: file.endswith('.wbt'), filenames))
+if len(worlds) == 0:
+    message = 'FAIL: No world could be found in the shared folder.'
+    connection.sendall(message.encode('utf-8'))
+    print_and_exit(message)
+if len(worlds) > 1:
+    message = 'FAIL: More than one world was found in the shared folder.'
+    connection.sendall(message.encode('utf-8'))
+    print_and_exit(message)
+world_file = os.path.join(shared_folder, worlds[0])
+
+lines = []
+if 'launch_args.txt' in filenames:
+    launch_args_file = open(os.path.join(shared_folder, 'launch_args.txt'), 'r')
+    lines = launch_args_file.readlines()
+    for i in range(len(lines)):
+        lines[i] = lines[i].strip()
+
+webots_process = subprocess.Popen(['/Applications/Webots.app/Contents/MacOS/webots', world_file, *lines])
+connection.sendall(b'ACK')
+connection.settimeout(1)
+while webots_process.poll() is None:
+    try:
+        data = connection.recv(1024)
+    except socket.timeout:
+        continue
+    else:
+        if not data:
+            print('Connection was closed by the client.')
+            clean_shared_folder()
+            tcp_socket.close()
+            webots_process.kill()
+            exit(1)
+
+print('Webots was executed successfully.')
+clean_shared_folder()
+tcp_socket.close()
