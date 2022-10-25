@@ -106,5 +106,7 @@ while webots_process.poll() is None:
             exit(1)
 
 print('Webots was executed successfully.')
+closing_message = 'CLOSED'
+connection.sendall(closing_message.encode('utf-8'))
 clean_shared_folder()
 tcp_socket.close()
