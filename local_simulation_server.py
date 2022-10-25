@@ -17,8 +17,6 @@
 """Local simulation server."""
 
 import os
-import shutil
-import signal
 import socket
 import subprocess
 import sys
@@ -31,31 +29,11 @@ shared_folder = None
 tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
-def clean_shared_folder():
-    if shared_folder:
-        if os.path.isdir(shared_folder):
-            for element in os.listdir(shared_folder):
-                element_path = os.path.join(shared_folder, element)
-                if os.path.isfile(element_path):
-                    os.remove(element_path)
-                if os.path.isdir(element_path):
-                    shutil.rmtree(element_path)
-
-
-def keyboardInterruptHandler(signal, frame):
-    clean_shared_folder()
-    tcp_socket.close()
-    exit(0)
-
-
 def print_and_exit(message):
-    clean_shared_folder()
     tcp_socket.close()
     print(message, file=sys.stderr)
     exit(1)
 
-
-signal.signal(signal.SIGINT, keyboardInterruptHandler)
 
 tcp_socket.bind((HOST, PORT))
 tcp_socket.listen()
@@ -100,7 +78,6 @@ while webots_process.poll() is None:
     else:
         if not data:
             print('Connection was closed by the client.')
-            clean_shared_folder()
             tcp_socket.close()
             webots_process.kill()
             exit(1)
@@ -108,5 +85,4 @@ while webots_process.poll() is None:
 print('Webots was executed successfully.')
 closing_message = 'CLOSED'
 connection.sendall(closing_message.encode('utf-8'))
-clean_shared_folder()
 tcp_socket.close()
