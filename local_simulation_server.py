@@ -25,7 +25,6 @@ from os import walk
 HOST = ''  # Any host can connect
 PORT = int(sys.argv[1])  # Port to listen on
 
-shared_folder = None
 tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 tcp_socket.bind((HOST, PORT))
@@ -46,7 +45,25 @@ while True:
         connection.close()
         continue
 
-    webots_process = subprocess.Popen(cmd)
+    try:
+        test_webots_cmd = subprocess.Popen([cmd[0]])
+    except FileNotFoundError:
+        print('`webots` command could not be found. Falling back to WEBOTS_HOME environment variable.')
+        if 'WEBOTS_HOME' in os.environ:
+            cmd[0] = os.path.join(os.environ['WEBOTS_HOME'], 'webots')
+        else:
+            print('WEBOTS_HOME is not defined. Falling back to default installation folder `/Applications/Webots.app`')
+            cmd[0] = '/Applications/Webots.app/Contents/MacOS/webots'
+
+    try:
+        webots_process = subprocess.Popen(cmd)
+    except FileNotFoundError:
+        message = f'FAIL: Webots could not be found on the host.'
+        connection.sendall(message.encode('utf-8'))
+        print(message, file=sys.stderr)
+        connection.close()
+        continue
+
     connection.sendall(b'ACK')
     connection.settimeout(1)
     connection_closed = False
