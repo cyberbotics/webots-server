@@ -20,7 +20,6 @@ import os
 import socket
 import subprocess
 import sys
-from os import walk
 
 HOST = ''  # Any host can connect
 PORT = int(sys.argv[1])  # Port to listen on
@@ -58,7 +57,7 @@ while True:
     try:
         webots_process = subprocess.Popen(cmd)
     except FileNotFoundError:
-        message = f'FAIL: Webots could not be found on the host.'
+        message = 'FAIL: Webots could not be found on the host.'
         connection.sendall(message.encode('utf-8'))
         print(message, file=sys.stderr)
         connection.close()
