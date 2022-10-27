@@ -36,38 +36,17 @@ while True:
 
     print(f'Connection from {address}')
     data = connection.recv(1024)
-    shared_folder = data.decode('utf-8')
-    if not os.path.isdir(shared_folder):
-        message = f'FAIL: The shared folder \'{shared_folder}\' doesn\'t exist.'
+    cmd = data.decode('utf-8').split(' ')
+
+    world_file = cmd[1]
+    if not os.path.isfile(world_file):
+        message = f'FAIL: The world file \'{world_file}\' doesn\'t exist.'
         connection.sendall(message.encode('utf-8'))
         print(message, file=sys.stderr)
         connection.close()
         continue
 
-    filenames = next(walk(shared_folder), (None, None, []))[2]
-    worlds = list(filter(lambda file: file.endswith('.wbt'), filenames))
-    if len(worlds) == 0:
-        message = 'FAIL: No world could be found in the shared folder.'
-        connection.sendall(message.encode('utf-8'))
-        print(message, file=sys.stderr)
-        connection.close()
-        continue
-    if len(worlds) > 1:
-        message = 'FAIL: More than one world was found in the shared folder.'
-        connection.sendall(message.encode('utf-8'))
-        print(message, file=sys.stderr)
-        connection.close()
-        continue
-    world_file = os.path.join(shared_folder, worlds[0])
-
-    lines = []
-    if 'launch_args.txt' in filenames:
-        launch_args_file = open(os.path.join(shared_folder, 'launch_args.txt'), 'r')
-        lines = launch_args_file.readlines()
-        for i in range(len(lines)):
-            lines[i] = lines[i].strip()
-
-    webots_process = subprocess.Popen(['/Applications/Webots.app/Contents/MacOS/webots', world_file, *lines])
+    webots_process = subprocess.Popen(cmd)
     connection.sendall(b'ACK')
     connection.settimeout(1)
     connection_closed = False
