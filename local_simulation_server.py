@@ -41,23 +41,41 @@ while True:
 
     print(f'Connection from {address}')
     data = connection.recv(1024)
-    cmd = data.decode('utf-8').split(' ')
+    command = data.decode('utf-8').split(' ')
 
-    if not cmd[0].endswith('webots'):
-        message = f'FAIL: \'{cmd[0]}\'is not recognized as a Webots executable.'
+    if not command[0].endswith('webots'):
+        message = f'FAIL: \'{command[0]}\' is not recognized as a Webots executable.'
+        close_connection(connection, message)
+        continue
+    else:
+        if not os.path.isabs(command[0]) and command[0] != 'webots':
+            message = f'FAIL: \'{command[0]}\' must be either \'webots\' or an absolute path to the executable.'
+            close_connection(connection, message)
+            continue
+
+    if os.path.isabs(command[0]):
+        pass
+    elif 'WEBOTS_HOME' in os.environ:
+        path_suffix = 'Contents/MacOS/webots' if sys.platform('darwin') else 'webots'
+        command[0] = os.path.join(os.environ['WEBOTS_HOME'], path_suffix)
+    else:
+        message = 'WEBOTS_HOME is not defined. Please define a valid Webots installation folder.'
         close_connection(connection, message)
         continue
 
-    world_file = cmd[-1]
-    if not os.path.isfile(world_file):
+    for argument in command:
+        if argument.endswith('.wbt'):
+            world_file = argument
+            break
+    if world_file and not os.path.isfile(world_file):
         message = f'FAIL: The world file \'{world_file}\' doesn\'t exist.'
         close_connection(connection, message)
         continue
 
     try:
-        webots_process = subprocess.Popen(cmd)
+        webots_process = subprocess.Popen(command)
     except FileNotFoundError:
-        message = f'FAIL: \'{cmd[0]}\'could not be found on the host.'
+        message = f'FAIL: \'{command[0]}\' could not be found on the host.'
         close_connection(connection, message)
         continue
 
