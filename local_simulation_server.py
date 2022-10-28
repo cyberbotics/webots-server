@@ -57,7 +57,7 @@ while True:
     try:
         webots_process = subprocess.Popen(cmd)
     except FileNotFoundError:
-        message = 'FAIL: Webots could not be found on the host.'
+        message = f'FAIL: \'{cmd[0]}\'could not be found on the host.'
         connection.sendall(message.encode('utf-8'))
         print(message, file=sys.stderr)
         connection.close()
