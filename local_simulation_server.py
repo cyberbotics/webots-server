@@ -59,7 +59,7 @@ while True:
         path_suffix = 'Contents/MacOS/webots' if sys.platform('darwin') else 'webots'
         command[0] = os.path.join(os.environ['WEBOTS_HOME'], path_suffix)
     else:
-        message = 'WEBOTS_HOME is not defined. Please define a valid Webots installation folder.'
+        message = 'FAIL: WEBOTS_HOME is not defined. Please define a valid Webots installation folder.'
         close_connection(connection, message)
         continue
 
