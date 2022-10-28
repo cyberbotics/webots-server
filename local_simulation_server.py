@@ -63,13 +63,15 @@ while True:
         close_connection(connection, message)
         continue
 
+    invalid_world_file = False
     for argument in command:
         if argument.endswith('.wbt'):
-            world_file = argument
+            if not os.path.isfile(argument):
+                message = f'FAIL: The world file \'{argument}\' doesn\'t exist.'
+                close_connection(connection, message)
+                invalid_world_file = True
             break
-    if world_file and not os.path.isfile(world_file):
-        message = f'FAIL: The world file \'{world_file}\' doesn\'t exist.'
-        close_connection(connection, message)
+    if invalid_world_file:
         continue
 
     try:
