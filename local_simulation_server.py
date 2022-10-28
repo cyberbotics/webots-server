@@ -24,6 +24,13 @@ import sys
 HOST = ''  # Any host can connect
 PORT = int(sys.argv[1])  # Port to listen on
 
+
+def close_connection(connection, message):
+    connection.sendall(message.encode('utf-8'))
+    print(message, file=sys.stderr)
+    connection.close()
+
+
 tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 tcp_socket.bind((HOST, PORT))
@@ -36,31 +43,22 @@ while True:
     data = connection.recv(1024)
     cmd = data.decode('utf-8').split(' ')
 
-    world_file = cmd[1]
-    if not os.path.isfile(world_file):
-        message = f'FAIL: The world file \'{world_file}\' doesn\'t exist.'
-        connection.sendall(message.encode('utf-8'))
-        print(message, file=sys.stderr)
-        connection.close()
+    if not cmd[0].endswith('webots'):
+        message = f'FAIL: \'{cmd[0]}\'is not recognized as a Webots executable.'
+        close_connection(connection, message)
         continue
 
-    try:
-        test_webots_cmd = subprocess.Popen([cmd[0]])
-    except FileNotFoundError:
-        print('`webots` command could not be found. Falling back to WEBOTS_HOME environment variable.')
-        if 'WEBOTS_HOME' in os.environ:
-            cmd[0] = os.path.join(os.environ['WEBOTS_HOME'], 'webots')
-        else:
-            print('WEBOTS_HOME is not defined. Falling back to default installation folder `/Applications/Webots.app`')
-            cmd[0] = '/Applications/Webots.app/Contents/MacOS/webots'
+    world_file = cmd[-1]
+    if not os.path.isfile(world_file):
+        message = f'FAIL: The world file \'{world_file}\' doesn\'t exist.'
+        close_connection(connection, message)
+        continue
 
     try:
         webots_process = subprocess.Popen(cmd)
     except FileNotFoundError:
         message = f'FAIL: \'{cmd[0]}\'could not be found on the host.'
-        connection.sendall(message.encode('utf-8'))
-        print(message, file=sys.stderr)
-        connection.close()
+        close_connection(connection, message)
         continue
 
     connection.sendall(b'ACK')
