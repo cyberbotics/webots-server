@@ -22,7 +22,7 @@ import subprocess
 import sys
 
 HOST = ''  # Any host can connect
-PORT = 2000  # Port to listen on
+PORT = 2000 if len(sys.argv) < 2 else int(sys.argv[1])  # Port to listen on
 
 
 def close_connection(connection, message):
@@ -36,8 +36,6 @@ tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 tcp_socket.bind((HOST, PORT))
 tcp_socket.listen()
 while True:
-    if len(sys.argv) >= 2:
-        PORT = sys.argv[1]
     print(f'Waiting for connection on port {PORT}...')
     connection, address = tcp_socket.accept()
 
