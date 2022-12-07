@@ -33,7 +33,6 @@ services:
     volumes:
       - ${XAUTHORITY:-/dev/null}:${XAUTHORITY:-/dev/null}
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - controller_data:/usr/local/$THEIA_VOLUME:rw
 
   controller:
     depends_on:
@@ -55,7 +54,8 @@ services:
       - QT_X11_NO_MITSHM=1
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-
+    volumes:
+      - controller_data:/usr/local/$THEIA_VOLUME:rw
   theia:
     image: benjamindeleze/theia-test:test3
     ports:
