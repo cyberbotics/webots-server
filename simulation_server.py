@@ -324,8 +324,7 @@ class Client:
                                     envVarDocker["THEIA_VOLUME"] = volume
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
-                                elif info[1].strip().startswith('default_controller'):
-                                    print(info[1])
+                                elif info[1].strip() == 'default_controller':
                                     example_controller = info[2]
                                     dockerComposePath = config['dockerConfDir'] + "/docker-compose-benchmark.yml"
                                     envVarDocker["DEFAULT_CONTROLLER"] = example_controller

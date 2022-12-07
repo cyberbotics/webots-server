@@ -37,7 +37,7 @@ services:
   controller:
     depends_on:
       - webots
-    restart: on-failure # to restart the controller when the simulation is reset (but need to switch failure <-> success...)
+    restart: unless-stopped # restarts the container if the simulation is reset
     build:
       context: .
       dockerfile: controller_Dockerfile
@@ -51,10 +51,13 @@ services:
           devices:
             - capabilities:
                 - gpu
+    tty: true # Allows the controller to send its output to Webots' console
     environment:
       - QT_X11_NO_MITSHM=1
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
+      - WEBOTS_STDOUT_REDIRECT=1
+      - WEBOTS_STDERR_REDIRECT=1
     volumes:
       - controller_data:$PROJECT_PATH/controllers/$DEFAULT_CONTROLLER:rw
 
