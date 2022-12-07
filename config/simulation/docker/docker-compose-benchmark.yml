@@ -39,8 +39,6 @@ services:
     depends_on:
       - webots
     restart: on-failure # to restart the controller when the simulation is reset (but need to switch failure <-> success...)
-    logging:
-      driver: none # to prevent the controller connections attempts to overwrite webots startup logs on webots.cloud's loading bar
     build:
       context: .
       dockerfile: controller_Dockerfile
