@@ -1,6 +1,15 @@
 {
+  "webotsHome": "/home/cyberbotics/webots",
   "port": 3000,
-  "projectsDir": "/home/cyberbotics/streaming_projects",
   "logDir": "log/",
-  "monitorLogEnabled": true
+  "monitorLogEnabled": true,
+  "portRewrite": true,
+  "server": "cyberbotics1.epfl.ch",
+  "docker": true,
+  "notify": [
+    "https://testing.webots.cloud/ajax/server/setup.php",
+    "https://benchmark.webots.cloud/ajax/server/setup.php",
+    "https://proto.webots.cloud/ajax/server/setup.php"
+  ],
+  "debug": true
 }
