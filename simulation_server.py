@@ -197,7 +197,7 @@ class Client:
         if error:
             self.websocket.write_message(f'loading: Error: {error}')
             logging.error(error)
-            return false
+            return False
 
         self.world = filename
         mkdir_p(self.project_instance_path)
@@ -325,11 +325,15 @@ class Client:
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
                                 elif info[1].strip() == 'default_controller':
-                                    example_controller = info[2]
+                                    default_controller = info[2]
                                     dockerComposePath = config['dockerConfDir'] + "/docker-compose-benchmark.yml"
-                                    envVarDocker["DEFAULT_CONTROLLER"] = example_controller
+                                    envVarDocker["DEFAULT_CONTROLLER"] = default_controller
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
+                                    os.system(
+                                        f'cp {config["dockerConfDir"]}/remote_controller_launcher.py '
+                                        f'./controllers/{default_controller}/remote_controller_launcher.py'
+                                    )
                             elif line.strip().startswith("type:"):
                                 message = line.replace(" ", "")
                                 client.websocket.write_message(message)
