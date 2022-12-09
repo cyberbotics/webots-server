@@ -37,6 +37,7 @@ services:
   controller:
     depends_on:
       - webots
+    restart: 'unless-stopped' # restarts the container if the simulation is reset
     build:
       context: .
       dockerfile: controller_Dockerfile
@@ -46,8 +47,6 @@ services:
         - PROJECT_PATH=$PROJECT_PATH
     command: python3 $PROJECT_PATH/controllers/$DEFAULT_CONTROLLER/remote_controller_launcher.py
     deploy:
-      restart_policy:
-        condition: unless-stopped # restarts the container if the simulation is reset
       resources:
         reservations:
           devices:
