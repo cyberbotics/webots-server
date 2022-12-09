@@ -16,4 +16,8 @@ class Initializer:
 
 
 init = Initializer()
-importlib.import_module(os.environ['DEFAULT_CONTROLLER'])
+
+default_controller = os.environ['DEFAULT_CONTROLLER']
+spec = importlib.util.spec_from_file_location(default_controller, f'{default_controller}.py')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)

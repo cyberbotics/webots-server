@@ -45,7 +45,7 @@ services:
         - DEFAULT_CONTROLLER=$DEFAULT_CONTROLLER
         - PORT=$PORT
         - PROJECT_PATH=$PROJECT_PATH
-    command: python3 $PROJECT_PATH/controllers/$DEFAULT_CONTROLLER/remote_controller_launcher.py
+    command: python3 $PROJECT_PATH/remote_controller_launcher.py
     deploy:
       resources:
         reservations:

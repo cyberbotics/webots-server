@@ -332,7 +332,7 @@ class Client:
                                     client.websocket.write_message('ide: enable')
                                     os.system(
                                         f'cp {config["dockerConfDir"]}/remote_controller_launcher.py '
-                                        f'./controllers/{default_controller}/remote_controller_launcher.py'
+                                        f'./remote_controller_launcher.py'
                                     )
                             elif line.strip().startswith("type:"):
                                 message = line.replace(" ", "")
