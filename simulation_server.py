@@ -197,7 +197,7 @@ class Client:
         if error:
             self.websocket.write_message(f'loading: Error: {error}')
             logging.error(error)
-            return false
+            return False
 
         self.world = filename
         mkdir_p(self.project_instance_path)
@@ -324,6 +324,14 @@ class Client:
                                     envVarDocker["THEIA_VOLUME"] = volume
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
+                                elif info[1].strip() == 'default_controller':
+                                    default_controller = info[2]
+                                    dockerComposePath = config['dockerConfDir'] + "/docker-compose-benchmark.yml"
+                                    envVarDocker["DEFAULT_CONTROLLER"] = default_controller
+                                    envVarDocker["THEIA_PORT"] = port + 500
+                                    client.websocket.write_message('ide: enable')
+                                    # using hard link so that the COPY command in the Dockerfile will work on the launcher file
+                                    os.system(f'ln {config["dockerConfDir"]}/remote_controller_launcher.py')
                             elif line.strip().startswith("type:"):
                                 message = line.replace(" ", "")
                                 client.websocket.write_message(message)
