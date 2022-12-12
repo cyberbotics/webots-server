@@ -330,7 +330,8 @@ class Client:
                                     envVarDocker["DEFAULT_CONTROLLER"] = default_controller
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
-                                    os.system(f'cp {config["dockerConfDir"]}/remote_controller_launcher.py .')
+                                    # using hard link so that the COPY command in the Dockerfile will work on the launcher file
+                                    os.system(f'ln {config["dockerConfDir"]}/remote_controller_launcher.py')
                             elif line.strip().startswith("type:"):
                                 message = line.replace(" ", "")
                                 client.websocket.write_message(message)
