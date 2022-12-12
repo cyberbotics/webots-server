@@ -5,7 +5,7 @@ from controller.wb import wb
 
 class Initializer:
     def __init__(self):
-        # Running wb_robot_init() before controller execution to send the logs to webots container stdout even if controller crashes.
+        # Running wb_robot_init() before controller execution to send the logs to webots container stdout even if the controller crashes.
         wb.wb_robot_init()
 
     def __del__(self):
