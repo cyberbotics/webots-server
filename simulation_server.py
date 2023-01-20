@@ -324,10 +324,10 @@ class Client:
                                     envVarDocker["THEIA_VOLUME"] = volume
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
-                                elif info[1].strip() == 'default_controller':
-                                    default_controller = info[2]
-                                    dockerComposePath = config['dockerConfDir'] + "/docker-compose-benchmark.yml"
-                                    envVarDocker["DEFAULT_CONTROLLER"] = default_controller
+                                elif info[1].strip() == 'competition':
+                                    volume = info[2]
+                                    dockerComposePath = config['dockerConfDir'] + "/docker-compose-competition.yml"
+                                    envVarDocker["THEIA_VOLUME"] = volume
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
                                     # using hard link so that the COPY command in the Dockerfile will work on the launcher file
