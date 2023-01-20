@@ -296,7 +296,7 @@ class Client:
                     envVarDocker["DISPLAY"] = display
                     envVarDocker["XAUTHORITY"] = xauth
 
-                config['dockerConfDir'] = os.path.abspath(os.path.dirname( __file__)) + '/config/simulation/docker'
+                config['dockerConfDir'] = os.path.abspath(os.path.dirname(__file__)) + '/config/simulation/docker'
                 # create a Dockerfile if not provided in the project folder
                 defaultDockerfilePath = ''
                 if not os.path.isfile('Dockerfile'):

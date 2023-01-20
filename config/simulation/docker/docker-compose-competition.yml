@@ -44,7 +44,6 @@ services:
       dockerfile: Dockerfile
       args:
         - WEBOTS_CONTROLLER_URL=tcp://172.17.0.1:$PORT/participant
-        - PORT=$PORT
         - PROJECT_PATH=$PROJECT_PATH
     command: python3 $PROJECT_PATH/remote_controller_launcher.py
     deploy:
