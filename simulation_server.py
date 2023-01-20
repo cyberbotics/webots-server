@@ -332,6 +332,11 @@ class Client:
                                     client.websocket.write_message('ide: enable')
                                     # using hard link so that the COPY command in the Dockerfile will work on the launcher file
                                     os.system(f'ln {config["dockerConfDir"]}/remote_controller_launcher.py')
+                                    with open(world, 'r') as world_file:
+                                        world_content = world_file.read()
+                                    world_content = world_content.replace('controller "participant"', 'controller "<extern>"')
+                                    with open(world, 'w') as world_file:
+                                        world_file.write(world_content)
                             elif line.strip().startswith("type:"):
                                 message = line.replace(" ", "")
                                 client.websocket.write_message(message)
