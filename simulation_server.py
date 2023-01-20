@@ -396,6 +396,12 @@ class Client:
                         line = line[line.index('|') + 2:]
                 if line.startswith('.'):  # Webots world is loaded, ready to receive connections
                     logging.info('Webots world is loaded, ready to receive connections')
+                    # if it is a competition docker project we restart the controller docker-compose service
+                    # to reset the connection attempt and to connect directly:
+                    if dockerComposePath == config['dockerConfDir'] + "/docker-compose-competition.yml":
+                        subprocess.Popen([
+                            'docker-compose', '-f', f'{self.project_instance_path}/docker-compose-competition.yml',
+                            'restart', 'controller'])
                     break
             hostname = config['server']
             protocol = 'wss:' if config['ssl'] else 'ws:'
