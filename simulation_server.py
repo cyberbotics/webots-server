@@ -413,7 +413,8 @@ class Client:
                 elif line == 'real-time' or line == 'step':
                     client.idle = False
                 elif client.competition and line == 'reset':
-                    subprocess.Popen([
+                    print('Restarting controller...')
+                    subprocess.run([
                         'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
                         'restart', 'controller'])
                 elif line == '.':
