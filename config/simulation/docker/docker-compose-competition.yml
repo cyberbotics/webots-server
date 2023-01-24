@@ -63,6 +63,8 @@ services:
       - controller_data:$PROJECT_PATH/$THEIA_VOLUME:rw
 
   theia:
+    depends_on:
+      - controller
     image: benjamindeleze/theia-test:test3
     ports:
       - $THEIA_PORT:3000
