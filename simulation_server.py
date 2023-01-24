@@ -384,6 +384,7 @@ class Client:
                     # client connection closed or killed
                     return
                 line = client.webots_process.stdout.readline().rstrip()
+                logging.info('Read line at startup: ' + line)
                 if config['docker']:
                     if line:
                         logging.info(line)

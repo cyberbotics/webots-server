@@ -38,7 +38,6 @@ services:
   controller:
     depends_on:
       - webots
-    restart: 'unless-stopped' # restarts the container if the simulation is reset
     build:
       context: ./controllers
       dockerfile: Dockerfile
