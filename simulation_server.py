@@ -409,11 +409,11 @@ class Client:
                     break
                 line = line.rstrip()
                 logging.info('Read line: ' + line)
-                if line == 'pause':
+                if line == 'webots_1      | pause':
                     client.idle = True
-                elif line == 'real-time' or line == 'step':
+                elif line == 'webots_1      | real-time' or line == 'webots_1      | step':
                     client.idle = False
-                elif client.competition and line == 'reset':
+                elif client.competition and line == 'webots_1      | reset':
                     logging.info('Restarting controller...')
                     subprocess.run([
                         'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
