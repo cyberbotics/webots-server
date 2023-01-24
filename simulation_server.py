@@ -387,7 +387,6 @@ class Client:
                 logging.info('Read line at startup: ' + line)
                 if config['docker']:
                     if line:
-                        logging.info(line)
                         if not ("theia" in line):
                             client.websocket.write_message(f'loading: {line}')
                         if defaultDockerfilePath and "not found" in line:
@@ -409,7 +408,6 @@ class Client:
                 if client.webots_process is None:
                     break
                 line = line.rstrip()
-                logging.info('Read line: ' + line)
                 if line == 'webots_1      | pause':
                     client.idle = True
                 elif line == 'webots_1      | real-time' or line == 'webots_1      | step':
