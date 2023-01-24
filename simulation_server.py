@@ -134,6 +134,7 @@ class Client:
         self.app = ''
         self.world = ''
         self.idle = True
+        self.competition = False
 
     def __del__(self):
         """Destroy an instance of client."""
@@ -325,6 +326,7 @@ class Client:
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
                                 elif info[1].strip() == 'competition':
+                                    client.competition = True
                                     volume = info[2]
                                     dockerComposePath = config['dockerConfDir'] + "/docker-compose-competition.yml"
                                     envVarDocker["THEIA_VOLUME"] = volume
@@ -396,13 +398,6 @@ class Client:
                         line = line[line.index('|') + 2:]
                 if line.startswith('.'):  # Webots world is loaded, ready to receive connections
                     logging.info('Webots world is loaded, ready to receive connections')
-                    # TODO: doesn't work. Need to do this when a step or a real-time is printed by Webots when running
-                    # if it is a competition docker project we restart the controller docker-compose service
-                    # to reset the connection attempt and to connect directly:
-                    if dockerComposePath == config['dockerConfDir'] + "/docker-compose-competition.yml":
-                        subprocess.Popen([
-                            'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
-                            'restart', 'controller'])
                     break
             hostname = config['server']
             protocol = 'wss:' if config['ssl'] else 'ws:'
@@ -417,6 +412,10 @@ class Client:
                     client.idle = True
                 elif line == 'real-time' or line == 'step':
                     client.idle = False
+                elif client.competition and line == 'reset':
+                    subprocess.Popen([
+                        'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
+                        'restart', 'controller'])
                 elif line == '.':
                     client.websocket.write_message('.')
             client.on_exit()
