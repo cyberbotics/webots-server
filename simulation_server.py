@@ -440,7 +440,7 @@ class Client:
         if config['docker']:
             if os.path.exists(f"{self.project_instance_path}/docker-compose.yml"):
                 os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down "
-                          "-v --rmi local")
+                          "-v --rmi local --timeout 0")
 
             if self.webots_process:
                 self.webots_process.terminate()
@@ -452,13 +452,10 @@ class Client:
                 self.webots_process = None
 
             """# remove unused _webots images
-            # TODO: could we do this with docker-compose down --rmi?
-            # We can, but it also removes the theia editor image
             available_images = os.popen(
                 "docker images --filter=reference='*_webots:*' --format '{{.Repository}}'").read().split('\n')
             running_images = os.popen("docker ps --format '{{.Image}}'").read().split('\n')
             unused_images = ' '.join([i for i in available_images if i not in running_images])
-            # TODO: remove the controller images as well
             if unused_images:
                 os.system(f"docker image rm {unused_images}")"""
             # remove dangling images, stopped containers, build cache, volumes and networks
