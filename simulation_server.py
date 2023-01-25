@@ -384,7 +384,6 @@ class Client:
                     # client connection closed or killed
                     return
                 line = client.webots_process.stdout.readline().rstrip()
-                logging.info('Read line at startup: ' + line)
                 if config['docker']:
                     if line:
                         if not ("theia" in line):
@@ -408,15 +407,15 @@ class Client:
                 if client.webots_process is None:
                     break
                 line = line.rstrip()
-                if line == '.':
-                    client.websocket.write_message('.')
-                elif line.startswith('webots_1'):
-                    if line.endswith('| pause'):
+                if line.startswith('webots_1'):  # output from docker-compose's webots service
+                    output = line[line.index('|') + 2:]
+                    if output == '.':
+                        client.websocket.write_message('.')
+                    elif output == 'pause':
                         client.idle = True
-                    elif line.endswith('| real-time') or line.endswith('| step'):
+                    elif output == 'real-time' or output == 'step':
                         client.idle = False
-                    elif client.competition and line.endswith('| reset'):
-                        logging.info('Restarting controller...')
+                    elif client.competition and output == 'reset':
                         subprocess.Popen([
                             'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
                             'restart', '--timeout', '0', 'controller'])
