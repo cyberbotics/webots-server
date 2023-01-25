@@ -249,7 +249,7 @@ class Client:
 
     def cleanup_webots_instance(self):
         """Cleanup the local Webots project not used any more by the client."""
-        if id(self):
+        if id(self) and os.path.exists(config['instancesPath'] + str(id(self))):
             shutil.rmtree(config['instancesPath'] + str(id(self)))
 
     def start_webots(self, on_webots_quit):
