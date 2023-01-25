@@ -414,9 +414,9 @@ class Client:
                     client.idle = False
                 elif client.competition and line == 'webots_1      | reset':
                     logging.info('Restarting controller...')
-                    subprocess.run([
+                    subprocess.Popen([
                         'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
-                        'restart', 'controller'])
+                        'restart', '--timeout', '0', 'controller'])
                 elif line == '.':
                     client.websocket.write_message('.')
             client.on_exit()
@@ -439,7 +439,7 @@ class Client:
         """Force the termination of Webots or relative Docker service(s)."""
         if config['docker']:
             if os.path.exists(f"{self.project_instance_path}/docker-compose.yml"):
-                os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down -v")
+                os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down -v --rmi all")
 
             if self.webots_process:
                 self.webots_process.terminate()
@@ -450,13 +450,15 @@ class Client:
                     self.webots_process.kill()
                 self.webots_process = None
 
-            # remove unused _webots images
+            """# remove unused _webots images
+            # TODO: could we do this with docker-compose down --rmi?
             available_images = os.popen(
                 "docker images --filter=reference='*_webots:*' --format '{{.Repository}}'").read().split('\n')
             running_images = os.popen("docker ps --format '{{.Image}}'").read().split('\n')
             unused_images = ' '.join([i for i in available_images if i not in running_images])
+            # TODO: remove the controller images as well
             if unused_images:
-                os.system(f"docker image rm {unused_images}")
+                os.system(f"docker image rm {unused_images}")"""
             # remove dangling images, stopped containers, build cache, volumes and networks
             os.system("docker system prune --volumes -f")
         else:
