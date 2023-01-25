@@ -386,6 +386,7 @@ class Client:
                 line = client.webots_process.stdout.readline().rstrip()
                 if config['docker']:
                     if line:
+                        logging.info(line)
                         if not ("theia" in line):
                             client.websocket.write_message(f'loading: {line}')
                         if defaultDockerfilePath and "not found" in line:
