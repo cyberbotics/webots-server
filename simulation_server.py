@@ -439,7 +439,8 @@ class Client:
         """Force the termination of Webots or relative Docker service(s)."""
         if config['docker']:
             if os.path.exists(f"{self.project_instance_path}/docker-compose.yml"):
-                os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down -v --rmi all")
+                os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down "
+                          "-v --rmi local")
 
             if self.webots_process:
                 self.webots_process.terminate()
@@ -452,6 +453,7 @@ class Client:
 
             """# remove unused _webots images
             # TODO: could we do this with docker-compose down --rmi?
+            # We can, but it also removes the theia editor image
             available_images = os.popen(
                 "docker images --filter=reference='*_webots:*' --format '{{.Repository}}'").read().split('\n')
             running_images = os.popen("docker ps --format '{{.Image}}'").read().split('\n')
