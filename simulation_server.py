@@ -408,17 +408,18 @@ class Client:
                 if client.webots_process is None:
                     break
                 line = line.rstrip()
-                if line == 'webots_1      | pause':
-                    client.idle = True
-                elif line == 'webots_1      | real-time' or line == 'webots_1      | step':
-                    client.idle = False
-                elif client.competition and line == 'webots_1      | reset':
-                    logging.info('Restarting controller...')
-                    subprocess.Popen([
-                        'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
-                        'restart', '--timeout', '0', 'controller'])
-                elif line == '.':
+                if line == '.':
                     client.websocket.write_message('.')
+                elif line.startswith('webots_1'):
+                    if line.endswith('| pause'):
+                        client.idle = True
+                    elif line.endswith('| real-time') or line.endswith('| step'):
+                        client.idle = False
+                    elif client.competition and line.endswith('| reset'):
+                        logging.info('Restarting controller...')
+                        subprocess.Popen([
+                            'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
+                            'restart', '--timeout', '0', 'controller'])
             client.on_exit()
 
         if self.setup_project():
@@ -451,13 +452,6 @@ class Client:
                     self.webots_process.kill()
                 self.webots_process = None
 
-            """# remove unused _webots images
-            available_images = os.popen(
-                "docker images --filter=reference='*_webots:*' --format '{{.Repository}}'").read().split('\n')
-            running_images = os.popen("docker ps --format '{{.Image}}'").read().split('\n')
-            unused_images = ' '.join([i for i in available_images if i not in running_images])
-            if unused_images:
-                os.system(f"docker image rm {unused_images}")"""
             # remove dangling images, stopped containers, build cache, volumes and networks
             os.system("docker system prune --volumes -f")
         else:
