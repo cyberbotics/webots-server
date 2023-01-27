@@ -464,6 +464,7 @@ class Client:
                 images.append(json.loads(image_string))
 
             current_time = time.time()
+            print('Current time: ', current_time)
 
             for image in images:
                 repository = image['Repository']
@@ -471,10 +472,11 @@ class Client:
                 created_at = image['CreatedAt']
                 image_id = image['ID']
                 created_at = time.mktime(time.strptime(created_at, '%Y-%m-%d %H:%M:%S %z %Z'))
+                print(f'{repository}:{tag} {created_at} {image_id}')
 
                 # Check if image is not in use by any running containers
                 output = subprocess.check_output(['docker', 'ps', '-q', '-f', f'ancestor={image_id}'])
-                if (output == b'' and current_time - created_at > 86400
+                if (output == b'' and (current_time - created_at) > 86400
                         and f'{repository}:{tag}' not in config['persistantDockerImages']):
                     subprocess.call(['docker', 'rmi', image_id])
 
