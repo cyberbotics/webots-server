@@ -467,15 +467,15 @@ class Client:
 
             for image in images:
                 repository = image['Repository']
+                tag = image['Tag']
                 created_at = image['CreatedAt']
                 image_id = image['ID']
                 created_at = time.mktime(time.strptime(created_at, '%Y-%m-%d %H:%M:%S %z %Z'))
 
                 # Check if image is not in use by any running containers
                 output = subprocess.check_output(['docker', 'ps', '-q', '-f', f'ancestor={image_id}'])
-                # enhancement: use "if not any(fnmatch.fnmatch(repository, pattern) for pattern in config['permanentImages']):"
-                # to allow '*' wildcards in the config file e.g. "cyberbotics/*"
-                if output == b'' and current_time - created_at > 86400 and repository not in config['permanentImages']:
+                if (output == b'' and current_time - created_at > 86400
+                        and f'{repository}:{tag}' not in config['persistantDockerImages']):
                     subprocess.call(['docker', 'rmi', image_id])
 
             os.system("docker system prune --volumes -f")

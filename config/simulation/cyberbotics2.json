@@ -3,11 +3,13 @@
   "projectsDir": "/home/cyberbotics/streaming_projects",
   "logDir": "log/",
   "monitorLogEnabled": true,
-  "permanentImages": [
-    "stpedrazzi/opendr-on-webots-cloud",
-    "benjamindeleze/theia-test",
-    "leoduggan/webots.cloud-test",
-    "leoduggan/webots-test",
-    "cyberbotics/webots.cloud"
+  "persistantDockerImages": [
+    "cyberbotics/webots.cloud:R2023a-ubuntu20.04-numpy",
+    "cyberbotics/webots.cloud:R2023a-ubuntu20.04",
+    "cyberbotics/webots.cloud:R2022b-ubuntu20.04",
+    "stpedrazzi/opendr-on-webots-cloud:latest",
+    "benjamindeleze/theia-test:test3",
+    "leoduggan/webots.cloud-test:24-01-2023",
+    "leoduggan/webots-test:24-01-2023"
   ]
 }
