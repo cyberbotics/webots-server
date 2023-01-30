@@ -2,14 +2,5 @@
   "port": 3000,
   "projectsDir": "/home/cyberbotics/streaming_projects",
   "logDir": "log/",
-  "monitorLogEnabled": true,
-  "persistantDockerImages": [
-    "cyberbotics/webots.cloud:R2023a-ubuntu20.04-numpy",
-    "cyberbotics/webots.cloud:R2023a-ubuntu20.04",
-    "cyberbotics/webots.cloud:R2022b-ubuntu20.04",
-    "stpedrazzi/opendr-on-webots-cloud:latest",
-    "benjamindeleze/theia-test:test3",
-    "leoduggan/webots.cloud-test:24-01-2023",
-    "leoduggan/webots-test:24-01-2023"
-  ]
+  "monitorLogEnabled": true
 }
