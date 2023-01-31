@@ -134,6 +134,7 @@ class Client:
         self.app = ''
         self.world = ''
         self.idle = True
+        self.competition = False
 
     def __del__(self):
         """Destroy an instance of client."""
@@ -248,7 +249,7 @@ class Client:
 
     def cleanup_webots_instance(self):
         """Cleanup the local Webots project not used any more by the client."""
-        if id(self):
+        if id(self) and os.path.exists(config['instancesPath'] + str(id(self))):
             shutil.rmtree(config['instancesPath'] + str(id(self)))
 
     def start_webots(self, on_webots_quit):
@@ -296,7 +297,7 @@ class Client:
                     envVarDocker["DISPLAY"] = display
                     envVarDocker["XAUTHORITY"] = xauth
 
-                config['dockerConfDir'] = os.path.abspath(os.path.dirname( __file__)) + '/config/simulation/docker'
+                config['dockerConfDir'] = os.path.abspath(os.path.dirname(__file__)) + '/config/simulation/docker'
                 # create a Dockerfile if not provided in the project folder
                 defaultDockerfilePath = ''
                 if not os.path.isfile('Dockerfile'):
@@ -324,14 +325,20 @@ class Client:
                                     envVarDocker["THEIA_VOLUME"] = volume
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
-                                elif info[1].strip() == 'default_controller':
-                                    default_controller = info[2]
-                                    dockerComposePath = config['dockerConfDir'] + "/docker-compose-benchmark.yml"
-                                    envVarDocker["DEFAULT_CONTROLLER"] = default_controller
+                                elif info[1].strip() == 'competition':
+                                    client.competition = True
+                                    volume = info[2]
+                                    dockerComposePath = config['dockerConfDir'] + "/docker-compose-competition.yml"
+                                    envVarDocker["THEIA_VOLUME"] = volume
                                     envVarDocker["THEIA_PORT"] = port + 500
                                     client.websocket.write_message('ide: enable')
                                     # using hard link so that the COPY command in the Dockerfile will work on the launcher file
                                     os.system(f'ln {config["dockerConfDir"]}/remote_controller_launcher.py')
+                                    with open(world, 'r') as world_file:
+                                        world_content = world_file.read()
+                                    world_content = world_content.replace('controller "participant"', 'controller "<extern>"')
+                                    with open(world, 'w') as world_file:
+                                        world_file.write(world_content)
                             elif line.strip().startswith("type:"):
                                 message = line.replace(" ", "")
                                 client.websocket.write_message(message)
@@ -401,12 +408,18 @@ class Client:
                 if client.webots_process is None:
                     break
                 line = line.rstrip()
-                if line == 'pause':
-                    client.idle = True
-                elif line == 'real-time' or line == 'step':
-                    client.idle = False
-                elif line == '.':
-                    client.websocket.write_message('.')
+                if line.startswith('webots_1'):  # output from docker-compose's webots service
+                    output = line[line.index('|') + 2:]
+                    if output == '.':
+                        client.websocket.write_message('.')
+                    elif output == 'pause':
+                        client.idle = True
+                    elif output == 'real-time' or output == 'step':
+                        client.idle = False
+                    elif client.competition and output == 'reset':
+                        subprocess.Popen([
+                            'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
+                            'restart', '--timeout', '0', 'controller'])
             client.on_exit()
 
         if self.setup_project():
@@ -427,7 +440,8 @@ class Client:
         """Force the termination of Webots or relative Docker service(s)."""
         if config['docker']:
             if os.path.exists(f"{self.project_instance_path}/docker-compose.yml"):
-                os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down -v")
+                os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down "
+                          "-v --rmi local --timeout 0")
 
             if self.webots_process:
                 self.webots_process.terminate()
@@ -438,14 +452,30 @@ class Client:
                     self.webots_process.kill()
                 self.webots_process = None
 
-            # remove unused _webots images
-            available_images = os.popen(
-                "docker images --filter=reference='*_webots:*' --format '{{.Repository}}'").read().split('\n')
-            running_images = os.popen("docker ps --format '{{.Image}}'").read().split('\n')
-            unused_images = ' '.join([i for i in available_images if i not in running_images])
-            if unused_images:
-                os.system(f"docker image rm {unused_images}")
             # remove dangling images, stopped containers, build cache, volumes and networks
+            # Get list of all images
+            output = subprocess.check_output(['docker', 'images', '-a', '--format', '{{json . }}'])
+            output = output.decode()
+
+            # Split output into individual JSON objects
+            image_strings = output.strip().split('\n')
+            images = []
+            for image_string in image_strings:
+                images.append(json.loads(image_string))
+            current_time = time.time()
+
+            for image in images:
+                repository = image['Repository']
+                tag = image['Tag']
+                created_at = image['CreatedAt']
+                image_id = image['ID']
+                created_at = time.mktime(time.strptime(created_at, '%Y-%m-%d %H:%M:%S %z %Z'))
+                # Check if image is not in use by any running containers and if it was created more than 24 hours ago
+                output = subprocess.check_output(['docker', 'ps', '-q', '-f', f'ancestor={image_id}'])
+                if (output == b'' and (current_time - created_at) > 24 * 60 * 60
+                        and f'{repository}:{tag}' not in config['persistantDockerImages']):
+                    subprocess.call(['docker', 'rmi', image_id])
+
             os.system("docker system prune --volumes -f")
         else:
             if self.webots_process:

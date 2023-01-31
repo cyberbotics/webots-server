@@ -38,13 +38,11 @@ services:
   controller:
     depends_on:
       - webots
-    restart: 'unless-stopped' # restarts the container if the simulation is reset
     build:
-      context: .
-      dockerfile: controller_Dockerfile
+      context: ./controllers
+      dockerfile: Dockerfile
       args:
-        - DEFAULT_CONTROLLER=$DEFAULT_CONTROLLER
-        - PORT=$PORT
+        - WEBOTS_CONTROLLER_URL=tcp://172.17.0.1:$PORT/participant
         - PROJECT_PATH=$PROJECT_PATH
     command: python3 $PROJECT_PATH/remote_controller_launcher.py
     deploy:
@@ -61,9 +59,11 @@ services:
       - WEBOTS_STDOUT_REDIRECT=1
       - WEBOTS_STDERR_REDIRECT=1
     volumes:
-      - controller_data:$PROJECT_PATH/controllers/$DEFAULT_CONTROLLER:rw
+      - controller_data:$PROJECT_PATH/$THEIA_VOLUME:rw
 
   theia:
+    depends_on:
+      - controller
     image: benjamindeleze/theia-test:test3
     ports:
       - $THEIA_PORT:3000
