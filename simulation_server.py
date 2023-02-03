@@ -607,8 +607,12 @@ class LoadHandler(tornado.web.RequestHandler):
 
     def get(self):
         """Return the current load of the simulation server."""
-        global current_load
-        self.write(str(current_load))
+        global previous_loads
+        average_load = 0
+        for load in previous_loads:
+            average_load += load
+        average_load /= len(previous_loads)
+        self.write(str(average_load))
 
 
 class MonitorHandler(tornado.web.RequestHandler):
@@ -822,8 +826,11 @@ def update_snapshot():
     snapshot.data['Network sent'] = network_sent_rate
     snapshot.data['Network received'] = network_received_rate
     snapshot.write()
-    # current_load reflects the maximum of CPU/swap/GPU/VRAM usage in percent
-    current_load = max(cpu_load, swap.percent, gpu_load_compute, gpu_ram_usage)
+    # current_load reflects the maximum of CPU/swap + RAM + VRAM/GPU usage in percent
+    current_load = max(cpu_load, (swap.percent + memory.percent + gpu_load_memory) / 3, gpu_load_compute)
+    previous_loads.append(current_load)
+    if len(previous_loads) > 5:
+        del previous_loads[0]
     snapshots.append(snapshot)
     if len(snapshots) > 600:  # display data for the last 10 minutes
         del snapshots[0]
@@ -853,6 +860,7 @@ def main():
     #
     global config
     global snapshots
+    global previous_loads
     global nvidia
     global network_sent
     global network_received
@@ -861,6 +869,7 @@ def main():
     network_sent = n.bytes_sent
     network_received = n.bytes_recv
     snapshots = []
+    previous_loads = []
     if 'docker' not in config:
         config['docker'] = False
     if config['docker']:
