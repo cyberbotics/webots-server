@@ -452,30 +452,30 @@ class Client:
                     self.webots_process.kill()
                 self.webots_process = None
 
-            # remove dangling images, stopped containers, build cache, volumes and networks
-            # Get list of all images
-            output = subprocess.check_output(['docker', 'images', '-a', '--format', '{{json . }}'])
-            output = output.decode()
+            # Remove old images if there is a 'persistantDockerImages' list in the config file
+            if 'persistantDockerImages' in config:
+                # Get list of all images
+                output = subprocess.check_output(['docker', 'images', '-a', '--format', '{{json . }}'])
+                output = output.decode()
 
-            # Split output into individual JSON objects
-            image_strings = output.strip().split('\n')
-            images = []
-            for image_string in image_strings:
-                images.append(json.loads(image_string))
-            current_time = time.time()
+                # Split output into individual JSON objects
+                image_strings = output.strip().split('\n')
+                images = []
+                for image_string in image_strings:
+                    images.append(json.loads(image_string))
+                current_time = time.time()
 
-            for image in images:
-                repository = image['Repository']
-                tag = image['Tag']
-                created_at = image['CreatedAt']
-                image_id = image['ID']
-                created_at = time.mktime(time.strptime(created_at, '%Y-%m-%d %H:%M:%S %z %Z'))
-                # Check if image is not in use by any running containers and if it was created more than 24 hours ago
-                output = subprocess.check_output(['docker', 'ps', '-q', '-f', f'ancestor={image_id}'])
-                if (output == b'' and (current_time - created_at) > 24 * 60 * 60
-                        and f'{repository}:{tag}' not in config['persistantDockerImages']):
-                    subprocess.call(['docker', 'rmi', image_id])
-
+                for image in images:
+                    repository = image['Repository']
+                    tag = image['Tag']
+                    created_at = image['CreatedAt']
+                    image_id = image['ID']
+                    created_at = time.mktime(time.strptime(created_at, '%Y-%m-%d %H:%M:%S %z %Z'))
+                    # Check if image is not in use by any running containers and if it was created more than 24 hours ago
+                    output = subprocess.check_output(['docker', 'ps', '-q', '-f', f'ancestor={image_id}'])
+                    if (output == b'' and (current_time - created_at) > 24 * 60 * 60
+                            and f'{repository}:{tag}' not in config['persistantDockerImages']):
+                        subprocess.call(['docker', 'rmi', image_id])
             os.system("docker system prune --volumes -f")
         else:
             if self.webots_process:
