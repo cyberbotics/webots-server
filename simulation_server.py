@@ -441,7 +441,7 @@ class Client:
         if config['docker']:
             if os.path.exists(f"{self.project_instance_path}/docker-compose.yml"):
                 os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down "
-                          "-v --rmi local --timeout 0")
+                          "-v --timeout 0")
 
             if self.webots_process:
                 self.webots_process.terminate()
@@ -473,7 +473,7 @@ class Client:
                     created_at = time.mktime(time.strptime(created_at, '%Y-%m-%d %H:%M:%S %z %Z'))
                     # Check if image is not in use by any running containers and if it was created more than 24 hours ago
                     output = subprocess.check_output(['docker', 'ps', '-q', '-f', f'ancestor={image_id}'])
-                    if (output == b'' and (current_time - created_at) > 24 * 60 * 60
+                    if (output == b'' and (current_time - created_at) > 2 * 24 * 60 * 60
                             and f'{repository}:{tag}' not in config['persistantDockerImages']):
                         subprocess.call(['docker', 'rmi', image_id])
             os.system("docker system prune --volumes -f")
