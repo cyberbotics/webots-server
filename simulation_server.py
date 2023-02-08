@@ -471,7 +471,7 @@ class Client:
                     created_at = image['CreatedAt']
                     created_at = time.mktime(time.strptime(created_at, '%Y-%m-%d %H:%M:%S %z %Z'))
                     # Check if image is not in use by any running containers and if it was created more than 24 hours ago
-                    output = subprocess.check_output(['docker', 'ps', '-q', '-f', f'ancestor={repository}'])
+                    output = subprocess.check_output(['docker', 'ps', '-q', '-f', f'ancestor={repository}:{tag}'])
                     if (output == b'' and (current_time - created_at) > 2 * 24 * 60 * 60
                             and f'{repository}:{tag}' not in config['persistantDockerImages']):
                         subprocess.call(['docker', 'rmi', f'{repository}:{tag}'])
