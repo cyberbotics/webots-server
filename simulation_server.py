@@ -184,7 +184,7 @@ class Client:
                 error = f'Missing blob in Webots simulation URL, founds {parts[2]}'
             else:
                 version = parts[3]  # tag or branch name
-                folder = '/'.join(parts[4:length - 2])
+                # folder = '/'.join(parts[4:length - 2])
                 project = '' if length == 6 else '/' + parts[length - 3]
                 if parts[length - 2] != 'worlds':
                     error = 'Missing worlds folder in Webots simulation URL'
@@ -205,7 +205,7 @@ class Client:
         os.chdir(self.project_instance_path)
         # get the default branch name
         repository_url = f'https://git@github.com/{username}/{repository}.git'
-        default_branch = subprocess.getoutput(f'git ls-remote --quiet --symref {repository_url}'
+        """default_branch = subprocess.getoutput(f'git ls-remote --quiet --symref {repository_url}'
                                               ' HEAD | head -1 | cut -f1 | cut -d/ -f3')
         url = f'https://github.com/{username}/{repository}/'
         if version == default_branch:
@@ -218,13 +218,20 @@ class Client:
                 url += 'tags/' + version
             else:
                 logging.error(f'Cannot determine if "{version}" is a branch or a tag: ${type}')
-        url += '/' + folder
+        url += '/' + folder"""
         try:
             path = os.getcwd()
         except OSError:
             path = False
-        command = AsyncProcess(['svn', 'export', url])
-        logging.info(f'$ svn export {url}')
+        # command = AsyncProcess(['svn', 'export', url])
+        # TODO: use git sparse-checkout instead of svn
+        command = AsyncProcess([
+            'git', 'clone', '--depth=1', '--no-checkout', '--branch', version, repository_url, '&&',
+            'cd', repository, '&&',
+            'git', 'sparse-checkout', 'set', '/*', '!/storage/', '&&',
+            'git', 'checkout', version
+        ])
+        logging.info(f'$ git shallow sparse clone {repository_url} of branch {version}')
         while True:
             output = command.run()
             if output[0] == 'x':
@@ -233,13 +240,13 @@ class Client:
                 logging.error(output[1:].strip('\n'))
             else:  # stdout
                 logging.info(output[1:].strip('\n'))
-        if version == default_branch and folder == '':
+        """if version == default_branch and folder == '':
             os.rename('trunk', repository)
         if project == '':
             if version != default_branch:
                 project = '/' + version
             else:
-                project = '/' + repository
+                project = '/' + repository"""
         self.project_instance_path += project
         logging.info('Done')
         if path:
@@ -841,7 +848,7 @@ def main():
     # the following config variables read from the config.json file
     # are described here:
     #
-    # server:              fully qualilified domain name of simulation server
+    # server:              fully qualified domain name of simulation server
     # ssl:                 for https/wss URL (true by default)
     # port:                local port on which the server is listening
     # portRewrite:         port rewritten in the URL by apache (true by default)
