@@ -184,6 +184,7 @@ class Client:
                 error = f'Missing blob in Webots simulation URL, founds {parts[2]}'
             else:
                 version = parts[3]  # tag or branch name
+                folder = '/'.join(parts[4:length - 2])
                 if parts[length - 2] != 'worlds':
                     error = 'Missing worlds folder in Webots simulation URL'
                 else:
@@ -212,7 +213,7 @@ class Client:
             f'git clone --depth=1 --no-checkout --branch "{version}" "{repository_url}" && '
             f'cd "{repository}" && '
             # We checkout everything except the storage folder to speed up the clone.
-            'git sparse-checkout set "/*" "!/storage/" && '
+            f'git sparse-checkout set "/{folder if folder else "*"}" "!/{folder + "/" if folder else ""}storage/" && '
             f'git checkout "{version}"'
         ])
         logging.info(f'$ git shallow sparse clone {repository_url} of branch {version}')
