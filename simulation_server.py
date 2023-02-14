@@ -246,9 +246,10 @@ class Client:
         if project == '':
             if version != default_branch:
                 project = '/' + version
-            else:
-                project = '/' + repository"""
+            else:"""
+        project = '/' + repository
         self.project_instance_path += project
+        print(f'self.project_instance_path: {self.project_instance_path}')
         logging.info('Done')
         if path:
             os.chdir(path)
