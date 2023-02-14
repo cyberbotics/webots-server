@@ -184,8 +184,6 @@ class Client:
                 error = f'Missing blob in Webots simulation URL, founds {parts[2]}'
             else:
                 version = parts[3]  # tag or branch name
-                # folder = '/'.join(parts[4:length - 2])
-                project = '' if length == 6 else '/' + parts[length - 3]
                 if parts[length - 2] != 'worlds':
                     error = 'Missing worlds folder in Webots simulation URL'
                 else:
@@ -203,34 +201,19 @@ class Client:
         self.world = filename
         mkdir_p(self.project_instance_path)
         os.chdir(self.project_instance_path)
-        # get the default branch name
         repository_url = f'https://git@github.com/{username}/{repository}.git'
-        """default_branch = subprocess.getoutput(f'git ls-remote --quiet --symref {repository_url}'
-                                              ' HEAD | head -1 | cut -f1 | cut -d/ -f3')
-        url = f'https://github.com/{username}/{repository}/'
-        if version == default_branch:
-            url += 'trunk'
-        else:  # determine if version is a branch or a tag
-            type = subprocess.getoutput(f'git ls-remote --quiet {repository_url} {version} | cut -f2 | cut -d/ -f2')
-            if type == 'heads':  # branch
-                url += 'branches/' + version
-            elif type == 'tags':
-                url += 'tags/' + version
-            else:
-                logging.error(f'Cannot determine if "{version}" is a branch or a tag: ${type}')
-        url += '/' + folder"""
         try:
             path = os.getcwd()
         except OSError:
             path = False
-        # command = AsyncProcess(['svn', 'export', url])
-        # TODO: use git sparse-checkout instead of svn
+        # We only clone the given version of the repository.
         command = AsyncProcess([
             'bash', '-c',
-            f'git clone --depth=1 --no-checkout --branch {version} {repository_url} && '
-            f'cd {repository} && '
+            f'git clone --depth=1 --no-checkout --branch "{version}" "{repository_url}" && '
+            f'cd "{repository}" && '
+            # We checkout everything except the storage folder to speed up the clone.
             'git sparse-checkout set "/*" "!/storage/" && '
-            f'git checkout {version}'
+            f'git checkout "{version}"'
         ])
         logging.info(f'$ git shallow sparse clone {repository_url} of branch {version}')
         while True:
@@ -241,15 +224,7 @@ class Client:
                 logging.error(output[1:].strip('\n'))
             else:  # stdout
                 logging.info(output[1:].strip('\n'))
-        """if version == default_branch and folder == '':
-            os.rename('trunk', repository)
-        if project == '':
-            if version != default_branch:
-                project = '/' + version
-            else:"""
-        project = '/' + repository
-        self.project_instance_path += project
-        print(f'self.project_instance_path: {self.project_instance_path}')
+        self.project_instance_path += f'/{repository}'
         logging.info('Done')
         if path:
             os.chdir(path)
