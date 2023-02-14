@@ -229,7 +229,7 @@ class Client:
             'bash', '-c',
             f'git clone --depth=1 --no-checkout --branch {version} {repository_url} && '
             f'cd {repository} && '
-            'git sparse-checkout set /* !/storage/ && '
+            'git sparse-checkout set "/*" "!/storage/" && '
             f'git checkout {version}'
         ])
         logging.info(f'$ git shallow sparse clone {repository_url} of branch {version}')
