@@ -211,9 +211,9 @@ class Client:
         # We only clone the given version of the repository.
         # We checkout everything except the storage folder to speed up the clone.
         if folder:
-            sparse_set_command = f'git sparse-checkout set "/{folder}" "!/{folder}/storage/"'
+            sparse_set_command = f'git sparse-checkout set "/{folder}"'
         else:
-            sparse_set_command = 'git sparse-checkout set "/*" "!/storage/"'
+            sparse_set_command = 'echo "No need to set sparse checkout"'
         command = AsyncProcess([
             'bash', '-c',
             f'git clone --depth=1 --no-checkout --branch "{version}" "{repository_url}" && '
