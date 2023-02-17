@@ -199,6 +199,7 @@ class Client:
             logging.error(error)
             return False
 
+        # Cloning the project repository.
         self.world = filename
         mkdir_p(self.project_instance_path)
         os.chdir(self.project_instance_path)
@@ -207,19 +208,18 @@ class Client:
             path = os.getcwd()
         except OSError:
             path = False
-        print(f'cwd: {self.project_instance_path}')
-        # We only clone the given version of the repository.
-        # We checkout everything except the storage folder to speed up the clone.
+        # We use sparse checkout when the world file is inside a subfolder of the repository.
         if folder:
             sparse_set_command = f'git sparse-checkout set "/{folder}"'
         else:
-            sparse_set_command = 'echo "No need to set sparse checkout"'
+            sparse_set_command = 'echo "Cloning the whole repository, no need to set sparse checkout"'
+        # We only clone the given branch/tag of the repository.
         command = AsyncProcess([
             'bash', '-c',
             f'git clone --depth=1 --no-checkout --branch "{version}" "{repository_url}" && '
             f'cd "{repository}" && {sparse_set_command} && git checkout "{version}"'
         ])
-        logging.info(f'$ git shallow sparse clone {repository_url} of branch {version}')
+        logging.info(f'$ shallow and sparse git clone in repository {repository_url} on branch {version}')
         while True:
             output = command.run()
             if output[0] == 'x':
