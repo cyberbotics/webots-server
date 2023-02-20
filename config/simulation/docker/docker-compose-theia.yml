@@ -20,6 +20,7 @@ services:
             - capabilities:
                 - gpu
     environment:
+      - DISPLAY=$DISPLAY
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
     ports:

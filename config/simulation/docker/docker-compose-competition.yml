@@ -21,10 +21,11 @@ services:
             - capabilities:
                 - gpu
     environment:
+      - DISPLAY=$DISPLAY
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-    ports:
-      - '$PORT:$PORT'
+    expose:
+      - '$PORT'
     stdin_open: true # docker run -i
     tty: true # docker run -t
     volumes:
@@ -37,7 +38,7 @@ services:
       context: ./controllers
       dockerfile: Dockerfile
       args:
-        - WEBOTS_CONTROLLER_URL=tcp://172.17.0.1:$PORT/participant
+        - WEBOTS_CONTROLLER_URL=tcp://localhost:$PORT/participant
         - PROJECT_PATH=$PROJECT_PATH
     command: python3 $PROJECT_PATH/remote_controller_launcher.py
     deploy:
