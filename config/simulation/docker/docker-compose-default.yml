@@ -19,6 +19,8 @@ services:
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - '$PORT:$PORT'
     stdin_open: true # docker run -i
