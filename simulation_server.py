@@ -630,7 +630,9 @@ class MonitorHandler(tornado.web.RequestHandler):
         swap = psutil.swap_memory()
         if nvidia:
             nvmlHandle = nvmlDeviceGetHandleByIndex(0)
-            gpu = nvmlDeviceGetName(nvmlHandle).decode('utf-8')
+            gpu = nvmlDeviceGetName(nvmlHandle)
+            if isinstance(gpu, bytes):
+                gpu = gpu.decode('utf-8')
             gpu_memory = nvmlDeviceGetMemoryInfo(nvmlHandle)
             gpu_ram = round(gpu_memory.total / (1024 * 1048576), 2)
             gpu += f' - {gpu_ram}GB'
