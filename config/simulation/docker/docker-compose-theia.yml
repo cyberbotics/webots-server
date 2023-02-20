@@ -20,7 +20,6 @@ services:
             - capabilities:
                 - gpu
     environment:
-      - DISPLAY=$DISPLAY
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
     ports:
@@ -28,7 +27,6 @@ services:
     stdin_open: true # docker run -i
     tty: true # docker run -t
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev/dri:/dev/dri:rw
       - controller_data:/usr/local/$THEIA_VOLUME:rw
 

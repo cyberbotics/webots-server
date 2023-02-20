@@ -17,11 +17,14 @@ services:
             - capabilities:
                 - gpu
     environment:
+      - DISPLAY=$DISPLAY
+      - XAUTHORITY=$XAUTHORITY
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-    ports:
-      - '$PORT:$PORT'
+    network_mode: host # docker run --net=host /!\ not secure
     stdin_open: true # docker run -i
     tty: true # docker run -t
     volumes:
+      - ${XAUTHORITY:-/dev/null}:${XAUTHORITY:-/dev/null}
       - /dev/dri:/dev/dri:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
