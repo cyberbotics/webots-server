@@ -24,13 +24,14 @@ services:
       - DISPLAY=$DISPLAY
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-    expose:
-      - '$PORT'
+    ports:
+      - '$PORT:$PORT'
     stdin_open: true # docker run -i
     tty: true # docker run -t
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:ro
       - /dev/dri:/dev/dri:rw
+      - /tmp/webots-1234/ipc:/tmp/webots-1234/ipc:rw
 
   controller:
     depends_on:
@@ -39,7 +40,7 @@ services:
       context: ./controllers
       dockerfile: Dockerfile
       args:
-        - WEBOTS_CONTROLLER_URL=tcp://localhost:$PORT/participant
+        - WEBOTS_CONTROLLER_URL=ipc://$PORT/participant
         - PROJECT_PATH=$PROJECT_PATH
     command: python3 $PROJECT_PATH/remote_controller_launcher.py
     deploy:
@@ -56,6 +57,7 @@ services:
       - WEBOTS_STDERR_REDIRECT=1
     volumes:
       - /dev/dri:/dev/dri:rw
+      - /tmp/webots-1234/ipc:/tmp/webots-1234/ipc:rw
       - controller_data:$PROJECT_PATH/$THEIA_VOLUME:rw
 
   theia:
