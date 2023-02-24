@@ -28,6 +28,7 @@ services:
     stdin_open: true # docker run -i
     tty: true # docker run -t
     volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
       - /dev/dri:/dev/dri:rw
       - controller_data:/usr/local/$THEIA_VOLUME:rw
 
