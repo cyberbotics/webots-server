@@ -42,7 +42,7 @@ services:
       args:
         - WEBOTS_CONTROLLER_URL=ipc://$PORT/participant
         - PROJECT_PATH=$PROJECT_PATH
-    command: python3 $PROJECT_PATH/remote_controller_launcher.py
+    command: python3 /usr/local/remote_controller_launcher.py
     deploy:
       resources:
         reservations:
@@ -58,7 +58,7 @@ services:
     volumes:
       - /dev/dri:/dev/dri:rw
       - /tmp/webots-$PORT/ipc:/tmp/webots-$PORT/ipc:rw
-      - controller_data:$PROJECT_PATH/$THEIA_VOLUME:rw
+      - controller_data:/usr/local/$THEIA_VOLUME:rw
 
   theia:
     depends_on:
