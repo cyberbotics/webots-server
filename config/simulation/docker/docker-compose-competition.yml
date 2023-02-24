@@ -31,7 +31,7 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:ro
       - /dev/dri:/dev/dri:rw
-      - /tmp/webots-1234/ipc:/tmp/webots-1234/ipc:rw
+      - /tmp/webots-$PORT/ipc:/tmp/webots-$PORT/ipc:rw
 
   controller:
     depends_on:
@@ -57,7 +57,7 @@ services:
       - WEBOTS_STDERR_REDIRECT=1
     volumes:
       - /dev/dri:/dev/dri:rw
-      - /tmp/webots-1234/ipc:/tmp/webots-1234/ipc:rw
+      - /tmp/webots-$PORT/ipc:/tmp/webots-$PORT/ipc:rw
       - controller_data:$PROJECT_PATH/$THEIA_VOLUME:rw
 
   theia:
