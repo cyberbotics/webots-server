@@ -22,18 +22,16 @@ services:
                 - gpu
     environment:
       - DISPLAY=$DISPLAY
-      - XAUTHORITY=$XAUTHORITY
-      - QT_X11_NO_MITSHM=1
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
     ports:
       - '$PORT:$PORT'
-    privileged: true
     stdin_open: true # docker run -i
     tty: true # docker run -t
     volumes:
-      - ${XAUTHORITY:-/dev/null}:${XAUTHORITY:-/dev/null}
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - /dev/dri:/dev/dri:rw
+      - /tmp/webots-$PORT/ipc:/tmp/webots-$PORT/ipc:rw
 
   controller:
     depends_on:
@@ -42,9 +40,9 @@ services:
       context: ./controllers
       dockerfile: Dockerfile
       args:
-        - WEBOTS_CONTROLLER_URL=tcp://172.17.0.1:$PORT/participant
+        - WEBOTS_CONTROLLER_URL=ipc://$PORT/participant
         - PROJECT_PATH=$PROJECT_PATH
-    command: python3 $PROJECT_PATH/remote_controller_launcher.py
+    command: python3 /usr/local/remote_controller_launcher.py
     deploy:
       resources:
         reservations:
@@ -53,13 +51,14 @@ services:
                 - gpu
     tty: true # Allows the controller to send its output to Webots' console
     environment:
-      - QT_X11_NO_MITSHM=1
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
       - WEBOTS_STDOUT_REDIRECT=1
       - WEBOTS_STDERR_REDIRECT=1
     volumes:
-      - controller_data:$PROJECT_PATH/$THEIA_VOLUME:rw
+      - /dev/dri:/dev/dri:rw
+      - /tmp/webots-$PORT/ipc/participant:/tmp/webots-$PORT/ipc/participant:rw
+      - controller_data:/usr/local/$THEIA_VOLUME:rw
 
   theia:
     depends_on:
