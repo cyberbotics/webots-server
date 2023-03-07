@@ -398,7 +398,7 @@ class Client:
                 if client.webots_process is None:
                     break
                 line = line.rstrip()
-                if line.startswith(f'{str(id(self))}webots-1'):  # output from docker-compose's webots service
+                if line.startswith(f'{str(id(self))}-webots-1'):  # output from docker-compose's webots service
                     output = line[line.index('|') + 2:]
                     if output == '.':
                         client.websocket.write_message('.')
