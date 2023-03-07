@@ -408,7 +408,7 @@ class Client:
                         client.idle = False
                     elif client.competition and output == 'reset':
                         subprocess.Popen([
-                            'docker compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
+                            'docker', 'compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
                             'restart', '--timeout', '0', 'controller'])
             client.on_exit()
 
@@ -866,6 +866,7 @@ def main():
     if config['docker']:
         if 'SSH_CONNECTION' not in os.environ:
             os.system('xhost +local:root')
+        os.environ['DOCKER_BUILDKIT'] = '0'  # buildkit is enabled by default in docker compose V2
     if 'webotsHome' not in config:
         config['webotsHome'] = os.getenv('WEBOTS_HOME', '/usr/bin/webots').replace('\\', '/')
     if config['docker']:
