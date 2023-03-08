@@ -351,7 +351,7 @@ class Client:
                     for key, value in envVarDocker.items():
                         env_file.write(f'{key}={value}\n')
 
-                command = f'docker-compose -f {self.project_instance_path}/docker-compose.yml up --build --no-color'
+                command = f'docker compose -f {self.project_instance_path}/docker-compose.yml up --build --no-color'
             else:
                 webotsCommand += world
                 command = webotsCommand
@@ -384,7 +384,7 @@ class Client:
                                 f"loading: Error: Image version {version} not available on Cyberbotics' dockerHub. "
                                 f"Please, add the appropriate Dockerfile to your project.")
                             return
-                    if '|' in line:  # docker-compose format
+                    if '|' in line:  # docker compose format
                         line = line[line.index('|') + 2:]
                 if line.startswith('.'):  # Webots world is loaded, ready to receive connections
                     logging.info('Webots world is loaded, ready to receive connections')
@@ -398,7 +398,7 @@ class Client:
                 if client.webots_process is None:
                     break
                 line = line.rstrip()
-                if line.startswith('webots_1'):  # output from docker-compose's webots service
+                if line.startswith(f'{str(id(self))}-webots-1'):  # output from docker compose's webots service
                     output = line[line.index('|') + 2:]
                     if output == '.':
                         client.websocket.write_message('.')
@@ -408,7 +408,7 @@ class Client:
                         client.idle = False
                     elif client.competition and output == 'reset':
                         subprocess.Popen([
-                            'docker-compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
+                            'docker', 'compose', '-f', f'{self.project_instance_path}/docker-compose.yml',
                             'restart', '--timeout', '0', 'controller'])
             client.on_exit()
 
@@ -430,7 +430,7 @@ class Client:
         """Force the termination of Webots or relative Docker service(s)."""
         if config['docker']:
             if os.path.exists(f"{self.project_instance_path}/docker-compose.yml"):
-                os.system(f"docker-compose -f {self.project_instance_path}/docker-compose.yml down "
+                os.system(f"docker compose -f {self.project_instance_path}/docker-compose.yml down "
                           "-v --timeout 0")
 
             if self.webots_process:
@@ -866,6 +866,7 @@ def main():
     if config['docker']:
         if 'SSH_CONNECTION' not in os.environ:
             os.system('xhost +local:root')
+        os.environ['DOCKER_BUILDKIT'] = '0'  # buildkit is enabled by default in docker compose V2
     if 'webotsHome' not in config:
         config['webotsHome'] = os.getenv('WEBOTS_HOME', '/usr/bin/webots').replace('\\', '/')
     if config['docker']:
