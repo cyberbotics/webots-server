@@ -384,7 +384,7 @@ class Client:
                                 f"loading: Error: Image version {version} not available on Cyberbotics' dockerHub. "
                                 f"Please, add the appropriate Dockerfile to your project.")
                             return
-                    if '|' in line:  # docker-compose format
+                    if '|' in line:  # docker compose format
                         line = line[line.index('|') + 2:]
                 if line.startswith('.'):  # Webots world is loaded, ready to receive connections
                     logging.info('Webots world is loaded, ready to receive connections')
