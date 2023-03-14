@@ -40,7 +40,7 @@ services:
       context: ./controllers
       dockerfile: Dockerfile
       args:
-        - WEBOTS_CONTROLLER_URL=ipc://$PORT/participant
+        - WEBOTS_CONTROLLER_URL=participant
         - PROJECT_PATH=$PROJECT_PATH
     command: python3 /usr/local/remote_controller_launcher.py
     deploy:
@@ -49,12 +49,13 @@ services:
           devices:
             - capabilities:
                 - gpu
-    tty: true # Allows the controller to send its output to Webots' console
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
       - WEBOTS_STDOUT_REDIRECT=1
       - WEBOTS_STDERR_REDIRECT=1
+      - PORT=$PORT
+    tty: true # Allows the controller to send its output to Webots' console
     volumes:
       - /dev/dri:/dev/dri:rw
       - /tmp/webots-$PORT/ipc/participant:/tmp/webots-$PORT/ipc/participant:rw
