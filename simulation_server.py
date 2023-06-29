@@ -267,7 +267,11 @@ class Client:
                 os.chdir(self.project_instance_path)
                 with open(world) as world_file:
                     version = world_file.readline().split()[1]
-                webots_default_image = f'cyberbotics/webots.cloud:{version}-ubuntu20.04'
+                webots_default_image = f'cyberbotics/webots.cloud:{version}-ubuntu'
+                if version[0] == 'R' and (version[1, 5] < 2023 or version == "R2023a"):
+                    webots_default_image += '20.04'
+                else:
+                    webots_default_image += '22.04'
                 makeProject = int(os.path.isfile('Makefile'))
                 webotsCommand = '\"' + webotsCommand.replace('\"', '\\"') + f'{config["projectsDir"]}/worlds/{self.world}\"'
                 envVarDocker = {
