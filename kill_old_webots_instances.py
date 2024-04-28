@@ -52,7 +52,7 @@ for proc in psutil.process_iter():
                     listOfProcessObjects.append(pinfo)
                 else:
                     print("Still running'{}': pid {} create on {} ('{}')".format(pinfo['name'], pinfo['pid'],
-                                                                                 pinfo['create_time'], pinfo['id']))
+                                                                                 pinfo['create_time'], pinfo['pid']))
             else:
                 listOfProcessObjects.append(pinfo)
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
