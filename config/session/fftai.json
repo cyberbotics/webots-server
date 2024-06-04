@@ -1,0 +1,10 @@
+{
+  "server": "platform.fftai.top",
+  "port": 1999,
+  "portRewrite": true,
+  "ssl": false,
+  "debug": true,
+  "simulationServers": [
+    "platform.fftai.top/2000"
+  ]
+}
