@@ -35,6 +35,7 @@ if [[ $1 == "restart" || $1 == "stop" ]] ; then
 fi
 
 if [[ $1 == "start" || $1 == "restart" ]] ; then
+  xhost +
   if [[ $# -lt 2 ]] ; then
     CONFIG="local"
   else
