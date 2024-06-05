@@ -2,8 +2,9 @@
   "server": "platform.fftai.top",
   "ssl": false,
   "portRewrite": true,
-  "debug": true,
+  "debug": false,
+  "docker": true,
   "webotsHome": "/usr/local/webots",
-  "projectsDir": "/home/fourier/webots-server/projects",
-  "allowedRepositories": ["https://github.com/cyberbotics"]
+  "projectCacheDir": "/home/fourier/luban-server/projectsCache",
+  "allowedRepositories": ["https://github.com/cyberbotics", "https://github.com/tiwater"]
 }
