@@ -478,7 +478,7 @@ class Client:
         global docker_compose_cmd
         if config['docker']:
             if os.path.exists(f"{self.project_instance_path}/docker-compose.yml"):
-                os.system(f"{{docker_compose_cmd}} -f {self.project_instance_path}/docker-compose.yml down "
+                os.system(f"{docker_compose_cmd} -f {self.project_instance_path}/docker-compose.yml down "
                           "-v --timeout 0")
 
             if self.webots_process:
