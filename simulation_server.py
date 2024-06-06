@@ -148,9 +148,8 @@ class Client:
     def setup_project(self):
         global config
         global current_load
-        self.project_instance_path = config['instancesPath'] + str(id(self))
-        project_instance_path = self.project_instance_path
-        
+        self.project_instance_path = os.path.join(config['instancesPath'], str(id(self)))
+
         if not hasattr(self, 'url'):
             logging.error('Missing URL.')
             return False
@@ -179,7 +178,7 @@ class Client:
         parts = self.url[19:].split('/')
         username = parts[0]
         repository_name = parts[1]
-
+        
         # Construct the cache path from the username and repository name.
         cache_path = os.path.join(config['projectCacheDir'], username, repository_name)
 
@@ -198,17 +197,26 @@ class Client:
                 os.makedirs(os.path.join(config['projectCacheDir'], username), exist_ok=True)
                 
                 # Copy the project folder
-                shutil.copytree(os.path.join(project_instance_path, repository_name), cache_path)
+                shutil.copytree(os.path.join(self.project_instance_path, repository_name), cache_path)
                 logging.info(f'Project {repository_name} cached at {cache_path}')
             except Exception as e:
                 logging.error(f'Error copying project to cache: {e}')
                 return False
         else:
-            self.world = parts[len(parts) - 1]
-
-        # Set the project path to the cache directory.
-        os.chdir(cache_path)
-        self.project_instance_path = os.path.join(cache_path, *parts[4:-2])
+            try:
+                self.world = parts[len(parts) - 1]
+                # Copy the cached project to the project instance path.
+                if os.path.exists(self.project_instance_path):
+                    shutil.rmtree(self.project_instance_path)
+                shutil.copytree(cache_path, self.project_instance_path)
+                logging.info(f'Project {repository_name} copied from cache to {self.project_instance_path}')
+                # Set the project path to the project instance path.
+                os.chdir(self.project_instance_path)
+                self.project_instance_path = os.path.join(self.project_instance_path, *parts[4:-2])
+            except Exception as e:
+                logging.error(f'Error copying project from cache: {e}')
+                return False
+        
 
         return True
 
@@ -222,7 +230,7 @@ class Client:
             username = parts[0]
             repository = parts[1]
             if parts[2] != 'blob' and parts[2] != 'tree':
-                error = f'Missing blob in Webots simulation URL, founds {parts[2]}'
+                error = f'Missing blob in Webots simulation URL, found: {parts[2]}'
             else:
                 version = parts[3]  # tag or branch name
                 folder = '/'.join(parts[4:length - 2])
@@ -269,7 +277,7 @@ class Client:
                 logging.error(output[1:].strip('\n'))
             else:  # stdout
                 logging.info(output[1:].strip('\n'))
-        
+
         self.project_instance_path += f'/{repository}'
         if folder:
             self.project_instance_path += f'/{folder}'
