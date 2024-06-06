@@ -129,6 +129,7 @@ class Client:
         """Create an instance of client."""
         self.websocket = websocket
         self.streaming_server_port = 0
+        self.rocs_server_port = 0
         self.webots_process = None
         self.on_webots_quit = None
         self.project_instance_path = ''
@@ -322,6 +323,7 @@ class Client:
                     "PROJECT_PATH": config["projectsDir"],
                     "MAKE": makeProject,
                     "PORT": port,
+                    "ROCS_PORT": client.rocs_server_port,
                     "COMPOSE_PROJECT_NAME": str(id(self)),
                     "WEBOTS": webotsCommand
                 }
@@ -556,7 +558,7 @@ class ClientWebSocketHandler(tornado.websocket.WebSocketHandler):
                 return 0
             found = False
             for client in self.clients:
-                if port == client.streaming_server_port:
+                if port == client.streaming_server_port or port == client.rocs_server_port:
                     found = True
                     break
             if found:
@@ -617,6 +619,7 @@ class ClientWebSocketHandler(tornado.websocket.WebSocketHandler):
                              f'streaming_server_port: {client.streaming_server_port})')
             elif 'start' in data:  # checkout a github folder and run a simulation in there
                 client.streaming_server_port = ClientWebSocketHandler.next_available_port()
+                client.rocs_server_port = ClientWebSocketHandler.next_available_port()
                 client.url = data['start']['url']
                 if 'mode' in data['start']:
                     client.mode = data['start']['mode']

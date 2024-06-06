@@ -22,6 +22,7 @@ services:
       - NVIDIA_DRIVER_CAPABILITIES=all
     ports:
       - '$PORT:$PORT'
+      - '$ROCS_PORT:8001'
     stdin_open: true # docker run -i
     tty: true # docker run -t
     volumes:
