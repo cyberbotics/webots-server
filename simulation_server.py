@@ -148,7 +148,8 @@ class Client:
     def setup_project(self):
         global config
         global current_load
-        self.project_instance_path = os.path.join(config['instancesPath'], str(id(self)))
+        base_instance_path = os.path.join(config['instancesPath'], str(id(self)))
+        self.project_instance_path = base_instance_path  # Update this later to include repo folder
 
         if not hasattr(self, 'url'):
             logging.error('Missing URL.')
@@ -178,9 +179,13 @@ class Client:
         parts = self.url[19:].split('/')
         username = parts[0]
         repository_name = parts[1]
+        length = len(parts)
+        folder = '/'.join(parts[4:length - 2])
         
         # Construct the cache path from the username and repository name.
         cache_path = os.path.join(config['projectCacheDir'], username, repository_name)
+        if folder:
+            cache_path = os.path.join(cache_path, folder)
 
         # Check if the cache path exists.
         if not os.path.exists(cache_path):
@@ -194,7 +199,9 @@ class Client:
                     shutil.rmtree(cache_path)
                 
                 # Create the necessary directories for the cache path
-                os.makedirs(os.path.join(config['projectCacheDir'], username), exist_ok=True)
+                parent_directory = os.path.dirname(cache_path)
+                os.makedirs(parent_directory, exist_ok=True)
+
                 
                 # Copy the project folder
                 shutil.copytree(self.project_instance_path, cache_path)
@@ -204,20 +211,22 @@ class Client:
                 return False
         else:
             try:
-                self.world = parts[len(parts) - 1]
+                self.world = parts[-1]
                 # Copy the cached project to the project instance path.
+                self.project_instance_path = os.path.join(base_instance_path, repository_name, *parts[4:-2])
                 if os.path.exists(self.project_instance_path):
                     shutil.rmtree(self.project_instance_path)
+                # Create the necessary directories for the cache path
+                parent_directory = os.path.dirname(self.project_instance_path)
+                os.makedirs(parent_directory, exist_ok=True)
                 shutil.copytree(cache_path, self.project_instance_path)
                 logging.info(f'Project {repository_name} copied from cache to {self.project_instance_path}')
                 # Set the project path to the project instance path.
-                os.chdir(self.project_instance_path)
-                self.project_instance_path = os.path.join(self.project_instance_path, *parts[4:-2])
+                os.chdir(base_instance_path)
             except Exception as e:
                 logging.error(f'Error copying project from cache: {e}')
                 return False
         
-
         return True
 
     def setup_project_from_github(self):
