@@ -197,7 +197,7 @@ class Client:
                 os.makedirs(os.path.join(config['projectCacheDir'], username), exist_ok=True)
                 
                 # Copy the project folder
-                shutil.copytree(os.path.join(self.project_instance_path, repository_name), cache_path)
+                shutil.copytree(self.project_instance_path, cache_path)
                 logging.info(f'Project {repository_name} cached at {cache_path}')
             except Exception as e:
                 logging.error(f'Error copying project to cache: {e}')
@@ -567,11 +567,11 @@ class ClientWebSocketHandler(tornado.websocket.WebSocketHandler):
                 return 0
             found = False
             for client in self.clients:
-                if port == client.streaming_server_port or port == client.rocs_server_port:
+                if port == client.streaming_server_port:
                     found = True
                     break
             if found:
-                port += 1
+                port += 2
                 continue
             # try to create a server to make sure that port is available
             testSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -588,7 +588,7 @@ class ClientWebSocketHandler(tornado.websocket.WebSocketHandler):
                 testSocket.close()
                 if found:
                     return port
-                port += 1
+                port += 2
 
     def open(self):
         """Open a new connection for an incoming client."""
@@ -628,7 +628,7 @@ class ClientWebSocketHandler(tornado.websocket.WebSocketHandler):
                              f'streaming_server_port: {client.streaming_server_port})')
             elif 'start' in data:  # checkout a github folder and run a simulation in there
                 client.streaming_server_port = ClientWebSocketHandler.next_available_port()
-                client.rocs_server_port = ClientWebSocketHandler.next_available_port()
+                client.rocs_server_port = client.streaming_server_port + 1
                 client.url = data['start']['url']
                 if 'mode' in data['start']:
                     client.mode = data['start']['mode']
@@ -972,6 +972,8 @@ def main():
     config['logDir'] = 'log' if 'logDir' not in config else expand_path(config['logDir'])
     if not os.path.isabs(config['logDir']):
         config['logDir'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), config['logDir'])
+    if not os.path.isabs(config['projectCacheDir']):
+        config['projectCacheDir'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), config['projectCacheDir'])
     simulationLogDir = os.path.join(config['logDir'], 'simulation')
     logFile = os.path.join(simulationLogDir, 'output.log')
     try:

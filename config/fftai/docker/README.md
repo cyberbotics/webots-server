@@ -1,3 +1,6 @@
 # Base image for fftai
 
-docker build -t ccr.ccs.tencentyun.com/fftai/fftai-webots:1.1 .
+This image includes webots and fftai rocs svr & lib.
+
+## Build
+docker build -t ccr.ccs.tencentyun.com/fftai/fftai-webots:$VERSION .

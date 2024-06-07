@@ -6,6 +6,6 @@
   "docker": true,
   "webotsHome": "/usr/local/webots",
   "persistantDockerImages": [],
-  "projectCacheDir": "/home/fourier/luban-server/projectsCache",
+  "projectCacheDir": "projectsCache",
   "allowedRepositories": ["https://github.com/cyberbotics", "https://github.com/tiwater"]
 }
