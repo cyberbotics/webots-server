@@ -10,7 +10,7 @@ The documentation on how to set-up a Webots simulation server is provided in the
 ```
 sudo a2enmod proxy proxy_http proxy_wstunnel
 ```
-Edit `/etc/apache2/site-available/fftai.conf` and add the following lines at the end of the `VirtualHost` section:
+Edit `/etc/apache2/sites-available/fftai.conf` and add the following lines at the end of the `VirtualHost` section:
 
 ```
 <VirtualHost *:80>
@@ -75,7 +75,11 @@ LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so
 </VirtualHost>
 ```
 
-Edit `000-default.conf` to configure for webots static page:
+Enable the site:
+sudo a2ensite fftai.conf
+
+Edit `000-default.conf` and/or `fftai.conf` to configure for webots static page:
+```
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
     DocumentRoot /var/www/html
@@ -83,6 +87,7 @@ Edit `000-default.conf` to configure for webots static page:
     # Alias /wwi to /home/$user/luban-server/html/wwi
     Alias /wwi /home/$user/luban-server/html/wwi
     <Directory /home/$user/luban-server/html/wwi>
+        Header set Access-Control-Allow-Origin "*"
         Options Indexes FollowSymLinks
         AllowOverride None
         Require all granted
@@ -99,6 +104,37 @@ Edit `000-default.conf` to configure for webots static page:
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
+```
+
+If on ubuntu, need to whitelist the folder in `/etc/apache2/apache2.conf`
+```
+    <Directory /home/$user/luban-server/html/wwi>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    <Directory /home/$user/luban-server/html/webots>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+```
+
+Grant execution permission to the folders:
+```
+sudo chmod 755 /home/fourier
+sudo chmod 755 /home/fourier/luban-server
+sudo chmod 755 /home/fourier/luban-server/html
+sudo chmod 755 /home/fourier/luban-server/html/webots
+sudo chmod 755 /home/fourier/luban-server/html/wwi
+```
+
+Restart Apache:
+```
+sudo a2enmod headers
+sudo systemctl restart apache2
+```
 
 ### Start Luban Server
 ```
