@@ -210,7 +210,7 @@ class Client:
             path = False
         # We use sparse checkout when the world file is inside a subfolder of the repository.
         if folder:
-            sparse_set_command = f'git sparse-checkout set "/{folder}"'
+            sparse_set_command = f'git sparse-checkout set "{folder}"'
         else:
             sparse_set_command = 'echo "Cloning the whole repository, no need to set sparse checkout"'
         # We only clone the given branch/tag of the repository.
