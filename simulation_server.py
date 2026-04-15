@@ -595,17 +595,19 @@ class ClientWebSocketHandler(tornado.websocket.WebSocketHandler):
         client.start_webots(self.on_webots_quit)
 
 
-class LoadHandler(tornado.web.RequestHandler):
-    """Handle load requests."""
+class StatusHandler(tornado.web.RequestHandler):
+    """Return the current status of the simulation server (load and repository policy)."""
 
     def get(self):
-        """Return the current load of the simulation server."""
         global previous_loads
-        average_load = 0
-        for load in previous_loads:
-            average_load += load
-        average_load /= len(previous_loads)
-        self.write(str(average_load))
+        average_load = sum(previous_loads) / len(previous_loads)
+        data = {
+            'load': average_load,
+            'shareIdleTime': config.get('shareIdleTime', 50)
+        }
+        if 'allowedRepositories' in config:
+            data['allowedRepositories'] = config['allowedRepositories']
+        self.write(json.dumps(data))
 
 
 class MonitorHandler(tornado.web.RequestHandler):
@@ -1003,7 +1005,7 @@ def main():
     handlers = []
     handlers.append((r'/monitor', MonitorHandler))
     handlers.append((r'/client', ClientWebSocketHandler))
-    handlers.append((r'/load', LoadHandler))
+    handlers.append((r'/status', StatusHandler))
     application = tornado.web.Application(handlers)
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(config['port'])
