@@ -43,6 +43,20 @@ def expand_path(path):
     return os.path.expandvars(os.path.expanduser(path))
 
 
+def is_simulation_allowed(i, url):
+    """Return True if the given simulation URL may be served by the i-th simulation server."""
+    if not url:
+        return True  # no URL provided, do not filter
+    info = simulation_server_repositories[i]
+    allowed = info.get('allowedRepositories', [])
+    share_idle_time = info.get('shareIdleTime', 0)
+    if not allowed:
+        return True  # server imposes no repository restriction
+    if url.startswith(tuple(allowed)):
+        return True  # URL is explicitly allowed
+    return share_idle_time > 0  # URL not allowed but server may share idle time
+
+
 class SessionHandler(tornado.web.RequestHandler):
     """Handle simulation session requests."""
 
@@ -53,13 +67,17 @@ class SessionHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
     def get(self):
-        """Return the less loaded simulation server."""
+        """Return the less loaded simulation server able to run the requested simulation."""
         global LOAD_THRESHOLD
         global simulation_server_loads
+        global simulation_server_repositories
+        simulation_url = self.get_query_argument('url', None)
         minimum = LOAD_THRESHOLD
         minimally_loaded_server = ''
         for i in range(len(config['simulationServers'])):
             if simulation_server_loads[i] >= LOAD_THRESHOLD:
+                continue
+            if not is_simulation_allowed(i, simulation_url):
                 continue
             if simulation_server_loads[i] < minimum:
                 minimum = simulation_server_loads[i]
@@ -199,10 +217,12 @@ def send_email(subject, content):
 
 
 def retrieve_load(url, i):
-    """Contact the i-th simulation server and retrieve its load."""
+    """Contact the i-th simulation server and retrieve its status (load and repository policy)."""
     global simulation_server_loads
+    global simulation_server_repositories
+    global simulation_server_initialized
     url = f'https://{url}' if config['ssl'] else f'http://{url}'
-    url += '/load'
+    url += '/status'
     if 'administrator' in config:
         protocol = 'https://' if config['ssl'] else 'http://'
         separator = '/' if config['portRewrite'] else ':'
@@ -225,8 +245,12 @@ def retrieve_load(url, i):
                          '(assuming 100% load)')
             simulation_server_loads[i] = 1000
     else:
-        load = float(response.read())
-        if simulation_server_loads[i] == 1000:
+        status = json.loads(response.read())
+        load = float(status['load'])
+        simulation_server_repositories[i] = {
+            key: status[key] for key in ('allowedRepositories', 'shareIdleTime') if key in status
+        }
+        if simulation_server_loads[i] == 1000 and simulation_server_initialized[i]:
             message = f'{config["simulationServers"][i]} simulation server is up and running again ' + \
                       f'(load = {load}%)'
             if 'administrator' in config:
@@ -246,6 +270,7 @@ def retrieve_load(url, i):
             else:
                 logging.info(message)
         simulation_server_loads[i] = load
+        simulation_server_initialized[i] = True
 
 
 def update_load():
@@ -297,6 +322,8 @@ def main():
     #
     global config
     global simulation_server_loads
+    global simulation_server_repositories
+    global simulation_server_initialized
 
     # logging system
     root_logger = logging.getLogger()
@@ -332,7 +359,9 @@ def main():
     tornado_access_log = logging.getLogger('tornado.access')
     tornado_access_log.setLevel(logging.WARNING)
 
-    simulation_server_loads = [0] * len(config['simulationServers'])
+    simulation_server_loads = [1000] * len(config['simulationServers'])
+    simulation_server_repositories = [{}] * len(config['simulationServers'])
+    simulation_server_initialized = [False] * len(config['simulationServers'])
     if 'administrator' in config:
         if 'mailServer' not in config:
             logging.info('No mail server defined in configuration, disabling e-mail notifications to ' +
