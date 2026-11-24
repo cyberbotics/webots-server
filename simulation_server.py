@@ -1004,7 +1004,9 @@ def main():
     handlers.append((r'/monitor', MonitorHandler))
     handlers.append((r'/client', ClientWebSocketHandler))
     handlers.append((r'/load', LoadHandler))
-    application = tornado.web.Application(handlers)
+    # Ping the clients regularly: the client WebSocket is idle once the simulation is started and reverse proxies
+    # (e.g., Apache, whose default timeout is 300 seconds) close idle connections, which terminates the simulation.
+    application = tornado.web.Application(handlers, websocket_ping_interval=30)
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(config['port'])
     try:
